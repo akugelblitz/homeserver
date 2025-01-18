@@ -1,0 +1,46 @@
+# traefik.yaml
+
+api:
+  insecure: true
+  debug: true
+  dashboard: true
+
+log:
+  level: DEBUG
+
+providers:
+  docker:
+    exposedByDefault: false
+
+  # file:
+  #   filename: /etc/traefik/dynamic_conf.yml
+  #   watch: true
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+  db:
+    address: ":5432"
+
+# experimental:
+#   plugins:
+#     sablier:
+#       moduleName: "github.com/sablierapp/sablier"
+#       version: "v1.8.1"
+
+accessLog:
+  filePath: "/traefik.log"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: aditya.1910.sharma@gmail.com
+      storage: /acme.json
+      caServer: https://acme-v02.api.letsencrypt.org/directory # production (default)
+      # caServer: https://acme-staging-v02.api.letsencrypt.org/directory # staging
+      dnsChallenge:
+        provider: cloudflare
+        delayBeforeCheck: 10 #Optional to wait x second before checking with the DNS Server
+
