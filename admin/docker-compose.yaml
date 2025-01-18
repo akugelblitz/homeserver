@@ -28,14 +28,11 @@ services:
     restart: unless-stopped
     networks:
     - admin-network
-    ports:
-    - "80:80"
-    - "443:443"
-    - "8080:8080"
     environment:
-      - TS_AUTHKEY=${TS_AUTHKEY}
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_USERSPACE=false
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: false
+      TZ: ${TZ}
     volumes:
       - tailscale_data:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
@@ -43,17 +40,17 @@ services:
       - net_admin
       - sys_module
     labels:
-      - "meta.name=tailscale"
-      - "meta.stack=admin"
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${ROOT_FQDN}`) "
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.tls.domains[0].main=$ROOT_FQDN"
-      - "traefik.http.routers.traefik.tls.domains[0].sans=*.$ROOT_FQDN"
+      meta.name: 'tailscale'
+      meta.stack: 'admin'
+      traefik.enable: 'true'
+      traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) '
+      traefik.http.routers.traefik.entrypoints: 'websecure'
+      traefik.http.routers.traefik.service: 'api@internal'
+      traefik.http.services.traefik.loadbalancer.server.port: '8080'
+      traefik.http.routers.traefik.tls: 'true'
+      traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
+      traefik.http.routers.traefik.tls.domains[0].main: '$ROOT_FQDN'
+      traefik.http.routers.traefik.tls.domains[0].sans: '*.$ROOT_FQDN'
   traefik:
     image: traefik:v3.1.7
     container_name: 'traefik'
@@ -74,18 +71,18 @@ services:
       # - ./traefik/acme.json:/acme.json
       # - ./traefik/traefik.log:/traefik.log
     environment:
-      TZ: ${TZ}
       CF_API_EMAIL: ${CF_API_EMAIL}
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+      TZ: ${TZ}
     labels:
-      - "meta.name=traefik"
-      - "meta.stack=admin"
-      # - "traefik.enable=true"
-      # - "traefik.http.routers.traefik.rule=Host(`traefik.${ROOT_FQDN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
-      # - "traefik.http.routers.traefik.entrypoints=websecure"
-      # # - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      # - "traefik.http.routers.traefik.service=api@internal"
-      # - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      meta.name: 'traefik'
+      meta.stack: 'admin'
+      # traefik.enable: 'true'
+      # traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))'
+      # traefik.http.routers.traefik.entrypoints: 'websecure'
+      # # traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
+      # traefik.http.routers.traefik.service: 'api@internal'
+      # traefik.http.services.traefik.loadbalancer.server.port: '8080'
 
   portainer:
     image: portainer/portainer-ce:2.24.0-alpine
@@ -93,65 +90,26 @@ services:
     restart: unless-stopped
     networks:
     - admin-network
-    # ports:
-    #   - 9000:9000
     volumes:
       - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       TZ: ${TZ}
     labels:
-      - "meta.name=portainer"
-      - "meta.stack=admin"
-      - "traefik.enable=true"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.${ROOT_FQDN}`)"
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.routers.portainer.tls=true"
-
-  # guacd:
-  #   container_name: guacd
-  #   image: guacamole/guacd
-  #   restart: unless-stopped
-  #   networks:
-  #   - admin-network
-  # guacamole:
-  #   container_name: guacamole
-  #   image: guacamole/guacamole
-  #   restart: unless-stopped
-  #   networks:
-  #   - admin-network
-  #   # ports:
-  #   #   - 8080:8080
-  #   environment:
-  #     GUACD_HOSTNAME: "guacd"
-  #     POSTGRES_HOSTNAME: "postgres"
-  #     POSTGRES_DATABASE: ${POSTGRES_DB}
-  #     POSTGRES_USER: ${POSTGRES_USER}
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  #     TOTP_ENABLED: "false"
-  #     TZ: ${TZ}
-  #   labels:
-  #     - "meta.name=guacamole"
-  #     - "meta.stack=admin"
-  #     - "traefik.enable=true"
-  #     - "traefik.http.services.guacamole.loadbalancer.server.port=8080"
-  #     - "traefik.http.routers.guacamole.rule=Host(`guacamole.${ROOT_FQDN}`)"
-  #     - "traefik.http.routers.guacamole.entrypoints=websecure"
-  #     - "traefik.http.routers.guacamole.tls=true"    
-  #   depends_on:
-  #     - postgres
-  #     - guacd
+      meta.name: 'portainer'
+      meta.stack: 'admin'
+      traefik.enable: 'true'
+      traefik.http.services.portainer.loadbalancer.server.port: '9000'
+      traefik.http.routers.portainer.rule: 'Host(`portainer.${ROOT_FQDN}`)'
+      traefik.http.routers.portainer.entrypoints: 'websecure'
+      traefik.http.routers.portainer.tls: 'true'
 
   beszel:
-    # image: 'bes:man01'
     image: 'henrygd/beszel:latest@sha256:f22a9a86a6909391c47418a08700721645bc983e74a70e3d58ac013fa392dd84' 
     container_name: 'beszel'
     restart: unless-stopped
     networks:
     - admin-network
-    # ports:
-    #   - '8090:8090'
     volumes:
       - beszel_data:/beszel_data
     extra_hosts:
@@ -160,13 +118,13 @@ services:
     environment:
       TZ: ${TZ}
     labels:
-      - "meta.name=beszel"
-      - "meta.stack=admin"
-      - "traefik.enable=true"
-      - "traefik.http.services.beszel.loadbalancer.server.port=8090"
-      - "traefik.http.routers.beszel.rule=Host(`beszel.${ROOT_FQDN}`)"
-      - "traefik.http.routers.beszel.entrypoints=websecure"
-      - "traefik.http.routers.beszel.tls=true"
+      meta.name: 'beszel'
+      meta.stack: 'admin'
+      traefik.enable: 'true'
+      traefik.http.services.beszel.loadbalancer.server.port: '8090'
+      traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
+      traefik.http.routers.beszel.entrypoints: 'websecure'
+      traefik.http.routers.beszel.tls: 'true'
 
   beszel-agent:
     image: 'henrygd/beszel-agent'
@@ -180,8 +138,8 @@ services:
       KEY: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINeO2vsk7775NqlhryY7R6PidFCCZvZJVi3noc7pOUqL"
       TZ: ${TZ}
     labels:
-      - "meta.name=beszel-agent"
-      - "meta.stack=admin"
+      meta.name: 'beszel-agent'
+      meta.stack: 'admin'
 
   # postgres:
   #   image: postgres:14-alpine
@@ -200,13 +158,13 @@ services:
   #     POSTGRES_DB: ${POSTGRES_DB}
   #     TZ: ${TZ}
   #   labels:
-  #     - "meta.name=postgres"
-  #     - "meta.stack=admin"
-  #     - "traefik.enable=true"
-  #     - "traefik.tcp.services.postgres.loadbalancer.server.port=5432"
-  #     - "traefik.tcp.routers.postgres.rule=HostSNI(`postgres.${ROOT_FQDN}`)"
-  #     - "traefik.tcp.routers.postgres.entrypoints=db"
-  #     - "traefik.http.routers.postgres.tls=true"
+  #     meta.name: 'postgres'
+  #     meta.stack: 'admin'
+  #     traefik.enable: 'true'
+  #     traefik.tcp.services.postgres.loadbalancer.server.port: '5432'
+  #     traefik.tcp.routers.postgres.rule: 'HostSNI(`postgres.${ROOT_FQDN}`)'
+  #     traefik.tcp.routers.postgres.entrypoints: 'db'
+  #     traefik.http.routers.postgres.tls: 'true'
 
   # pgadmin:
   #   image: dpage/pgadmin4
@@ -219,35 +177,33 @@ services:
   #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
   #     TZ: ${TZ}
   #   labels:
-  #     - "meta.name=pdadmin"
-  #     - "meta.stack=admin"
-  #     - "traefik.enable=true"
-  #     - "traefik.http.services.pgadmin.loadbalancer.server.port=80"
-  #     - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${ROOT_FQDN}`)"
-  #     - "traefik.http.routers.pgadmin.entrypoints=websecure"
-  #     - "traefik.http.routers.pgadmin.tls=true"
+  #     meta.name: 'pdadmin'
+  #     meta.stack: 'admin'
+  #     traefik.enable: 'true'
+  #     traefik.http.services.pgadmin.loadbalancer.server.port: '80'
+  #     traefik.http.routers.pgadmin.rule: 'Host(`pgadmin.${ROOT_FQDN}`)'
+  #     traefik.http.routers.pgadmin.entrypoints: 'websecure'
+  #     traefik.http.routers.pgadmin.tls: 'true'
   
-  # gotify:
-  #   image: gotify/server:latest
-  #   container_name: 'gotify'
-  #   restart: unless-stopped
-  #   networks:
-  #   - admin-network
-  #   # ports:
-  #   #   - 80:80
-  #   volumes:
-  #     - gotify_data:/app/data
-  #     # todo
-  #   environment:
-  #     TZ: ${TZ}
-  #   labels:
-  #     - "meta.name=gotify"
-  #     - "meta.stack=admin"
-  #     - "traefik.enable=true"
-  #     - "traefik.http.services.gotify.loadbalancer.server.port=80"
-  #     - "traefik.http.routers.gotify.rule=Host(`gotify.${ROOT_FQDN}`)"
-  #     - "traefik.http.routers.gotify.entrypoints=websecure"
-  #     - "traefik.http.routers.gotify.tls=true"
+  gotify:
+    image: gotify/server:latest
+    container_name: 'gotify'
+    restart: unless-stopped
+    networks:
+    - admin-network
+    volumes:
+      - gotify_data:/app/data
+      # todo
+    environment:
+      TZ: ${TZ}
+    labels:
+      meta.name: 'gotify'
+      meta.stack: 'admin'
+      traefik.enable: 'true'
+      traefik.http.services.gotify.loadbalancer.server.port: '80'
+      traefik.http.routers.gotify.rule: 'Host(`gotify.${ROOT_FQDN}`)'
+      traefik.http.routers.gotify.entrypoints: 'websecure'
+      traefik.http.routers.gotify.tls: 'true'
  
   hoarder:
     image: ghcr.io/hoarder-app/hoarder:${HOARDER_VERSION:-release}
@@ -264,16 +220,17 @@ services:
       DATA_DIR: /data
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
-      # NEXTAUTH_URL: hoarder.${ROOT_FQDN}
+      NEXTAUTH_URL: hoarder.${ROOT_FQDN}
       TZ: ${TZ}
     labels:
-      - "meta.name=hoarder"
-      - "meta.stack=admin"
-      - "traefik.enable=true"
-      - "traefik.http.services.hoarder.loadbalancer.server.port=3000"
-      - "traefik.http.routers.hoarder.rule=Host(`hoarder.${ROOT_FQDN}`)"
-      - "traefik.http.routers.hoarder.entrypoints=websecure"
-      - "traefik.http.routers.hoarder.tls=true"   
+      meta.name: 'hoarder'
+      meta.stack: 'admin'
+      traefik.enable: 'true'
+      traefik.http.services.hoarder.loadbalancer.server.port: '3000'
+      traefik.http.routers.hoarder.rule: 'Host(`hoarder.${ROOT_FQDN}`)'
+      traefik.http.routers.hoarder.entrypoints: 'websecure'
+      traefik.http.routers.hoarder.tls: 'true'   
+
   hoarder_chrome:
     image: gcr.io/zenika-hub/alpine-chrome:123
     container_name: 'hoarder_chrome'
@@ -287,6 +244,10 @@ services:
       - --remote-debugging-address=0.0.0.0
       - --remote-debugging-port=9222
       - --hide-scrollbars
+    labels:
+      meta.name: 'hoarder_chrome'
+      meta.stack: 'admin'
+
   hoarder_meilisearch:
     image: getmeili/meilisearch:v1.11.1
     container_name: 'hoarder_meilisearch'
@@ -298,5 +259,8 @@ services:
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
     volumes:
       - hoarder_meilisearch:/meili_data
+    labels:
+      meta.name: 'hoarder_meilisearch'
+      meta.stack: 'admin'
 
 
