@@ -1,0 +1,94 @@
+---
+###############################################################
+#                   Authelia configuration                    #
+###############################################################
+
+server:
+  address: 'tcp://:9091/'
+  endpoints:
+    authz:
+      forward-auth:
+        implementation: 'ForwardAuth'
+
+log:
+  level: debug
+theme: dark
+# This secret can also be set using the env variables AUTHELIA_JWT_SECRET_FILE
+
+identity_validation:
+  reset_password:
+    jwt_secret: a_very_important_secret
+    jwt_lifespan: '5 minutes'
+    jwt_algorithm: 'HS256'
+
+totp:
+  issuer: authelia.com
+
+# duo_api:
+#  hostname: api-123456789.kugel.homes
+#  integration_key: ABCDEF
+#  # This secret can also be set using the env variables AUTHELIA_DUO_API_SECRET_KEY_FILE
+#  secret_key: 1234567890abcdefghifjkl
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: argon2id
+      iterations: 1
+      salt_length: 16
+      parallelism: 8
+      memory: 64
+      
+access_control:
+  default_policy: deny
+  rules:
+    # Rules applied to everyone
+    - domain: traefik.kugel.homes
+      policy: bypass
+    - domain: whoami.kugel.homes
+      policy: one_factor
+    - domain: hoarder.kugel.homes
+      policy: one_factor
+    # - domain: pve1.kugel.homes
+    #   policy: two_factor
+
+session:
+  name: authelia_session
+  # This secret can also be set using the env variables AUTHELIA_SESSION_SECRET_FILE
+  secret: unsecure_session_secret
+  expiration: 3600  # 1 hour
+  inactivity: 300  # 5 minutes
+  # domain: kugel.homes  # Should match whatever your root protected domain is
+  cookies:
+    - domain: 'kugel.homes'
+      authelia_url: 'https://auth.kugel.homes'
+      default_redirection_url: 'https://hoarder.kugel.homes'
+
+  # redis:
+  #   host: redis
+  #   port: 6379
+  #   # This secret can also be set using the env variables AUTHELIA_SESSION_REDIS_PASSWORD_FILE
+  #   # password: authelia
+
+regulation:
+  max_retries: 3
+  find_time: 120
+  ban_time: 300
+
+storage:
+  encryption_key: a_very_important_secret # Now required
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  # smtp:
+  #   username: test
+  #   # This secret can also be set using the env variables AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE
+  #   password: password
+  #   host: mail.kugel.homes
+  #   port: 25
+  #   sender: admin@kugel.homes
+  filesystem:
+    filename: /config/notification.txt
+...
