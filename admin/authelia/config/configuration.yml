@@ -69,6 +69,9 @@ access_control:
       policy: one_factor
     - domain: hoarder.kugel.homes
       policy: one_factor
+    - domain: kuma.kugel.homes
+      # subject: 'oauth2:client:uptime-kuma'
+      policy: 'one_factor'
     # - domain: pve1.kugel.homes
     #   policy: two_factor
 
@@ -169,4 +172,17 @@ identity_providers:
         consent_mode: 'explicit'
         grant_types:
           - 'client_credentials'
+        token_endpoint_auth_method: 'client_secret_basic'
+
+      - client_id: 'uptime-kuma'
+        client_name: 'Uptime Kuma'
+        client_secret: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'  # The digest of 'insecure_secret'.
+        public: false
+        scopes:
+          - 'authelia.bearer.authz'
+        audience:
+          - 'https://kuma.kugel.homes/'
+        grant_types:
+          - 'client_credentials'
+        requested_audience_mode: 'implicit'
         token_endpoint_auth_method: 'client_secret_basic'

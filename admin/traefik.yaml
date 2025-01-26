@@ -55,8 +55,8 @@ certificatesResolvers:
     acme:
       email: aditya.1910.sharma@gmail.com
       storage: /certs/acme.json
-      # caServer: https://acme-v02.api.letsencrypt.org/directory # production (default)
-      caServer: https://acme-staging-v02.api.letsencrypt.org/directory # staging
+      caServer: https://acme-v02.api.letsencrypt.org/directory # production (default)
+      # caServer: https://acme-staging-v02.api.letsencrypt.org/directory # staging
       dnsChallenge:
         provider: cloudflare
         delayBeforeCheck: 10 #Optional to wait x second before checking with the DNS Server

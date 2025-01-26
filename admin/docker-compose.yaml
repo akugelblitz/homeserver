@@ -16,9 +16,6 @@ volumes:
   portainer_data:
   beszel_data:
   postgres_data:
-  gotify_data:
-  hoarder_data:
-  hoarder_meilisearch:
   uptime_kuma_data:
 
 
@@ -70,7 +67,7 @@ services:
       - no-new-privileges:true
     depends_on:
       - tailscale-traefik
-      - authelia
+      # - authelia
     network_mode: service:tailscale-traefik
     # ports:
     #   - "80:80"
@@ -126,6 +123,104 @@ services:
       traefik.http.routers.portainer.entrypoints: 'websecure'
       traefik.http.routers.portainer.tls: 'true'
 
+  postgres:
+    image: postgres:16.3
+    container_name: 'postgres'
+    restart: unless-stopped
+    networks:
+    - admin-network
+    # ports:
+    #   - 5432:5432
+    volumes:
+      - ./postgres-init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: ${TZ}
+    labels:
+      meta.name: 'postgres'
+      meta.stack: 'admin'
+      traefik.enable: 'true'
+      traefik.tcp.services.postgres.loadbalancer.server.port: '5432'
+      traefik.tcp.routers.postgres.rule: 'HostSNI(`postgres.${ROOT_FQDN}`)'
+      traefik.tcp.routers.postgres.entrypoints: 'db'
+      traefik.tcp.routers.postgres.tls: 'true'
+      traefik.tcp.routers.postgres.tls.certresolver: 'letsencrypt'
+
+  pgadmin:
+    image: dpage/pgadmin4:8.12
+    container_name: 'pgadmin'
+    restart: unless-stopped
+    networks:
+    - admin-network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      TZ: ${TZ}
+    labels:
+      meta.name: 'pdadmin'
+      meta.stack: 'admin'
+      traefik.enable: 'true'
+      traefik.http.services.pgadmin.loadbalancer.server.port: '80'
+      traefik.http.routers.pgadmin.rule: 'Host(`pgadmin.${ROOT_FQDN}`)'
+      traefik.http.routers.pgadmin.entrypoints: 'websecure'
+      traefik.http.routers.pgadmin.tls: 'true'
+  
+
+  # authelia:
+  #   image: 'authelia/authelia:4.38'
+  #   container_name: 'authelia'
+  #   restart: unless-stopped
+  #   user: "${UID}:${GID}"
+  #   volumes:
+  #     - './authelia/secrets:/secrets:ro'
+  #     - './authelia/config:/config'
+  #     - './authelia/logs:/var/log/authelia/'
+  #   networks:
+  #   - admin-network 
+  #   labels:
+  #     ## Expose Authelia through Traefik
+  #     meta.name: 'authelia'
+  #     meta.stack: 'admin'
+  #     traefik.enable: 'true'
+  #     traefik.http.services.auth.loadbalancer.server.port: '9091'
+  #     traefik.http.routers.auth.rule: 'Host(`auth.${ROOT_FQDN}`)'
+  #     traefik.http.routers.auth.entrypoints: 'websecure'
+  #     traefik.http.routers.auth.tls: 'true'
+  #     ## Setup Authelia ForwardAuth Middlewares
+  #     # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
+  #     # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
+  #     # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+  #   environment:
+  #     TZ: ${TZ}
+  #     X_AUTHELIA_CONFIG_FILTERS: 'template' 
+
+  # uptime-kuma:
+  #   image: louislam/uptime-kuma:1.23.16
+  #   container_name: 'kuma'
+  #   restart: unless-stopped
+  #   volumes:
+  #     - uptime_kuma_data:/app/data
+  #   networks:
+  #   - admin-network 
+  #   environment:
+  #     TZ: ${TZ}
+  #   labels:
+  #     meta.name: 'uptime-kuma'
+  #     meta.stack: 'admin'
+  #     traefik.enable: 'true'
+  #     traefik.http.services.kuma.loadbalancer.server.port: '3001'
+  #     traefik.http.routers.kuma.rule: 'Host(`kuma.${ROOT_FQDN}`)'
+  #     traefik.http.routers.kuma.entrypoints: 'websecure'
+  #     traefik.http.routers.kuma.tls: 'true'
+  #     traefik.http.routers.kuma.middlewares: 'authelia@docker'
+
+    # ports:
+    #   # <Host Port>:<Container Port>
+    #   - 3001:3001
+     
   beszel:
     image: 'henrygd/beszel:latest@sha256:f22a9a86a6909391c47418a08700721645bc983e74a70e3d58ac013fa392dd84' 
     container_name: 'beszel'
@@ -162,194 +257,6 @@ services:
     labels:
       meta.name: 'beszel-agent'
       meta.stack: 'admin'
-
-  # postgres:
-  #   image: postgres:14-alpine
-  #   container_name: 'postgres'
-  #   restart: unless-stopped
-  #   networks:
-  #   - admin-network
-  #   # ports:
-  #   #   - 5432:5432
-  #   volumes:
-  #     - ./postgres-init:/docker-entrypoint-initdb.d
-  #     - postgres_data:/var/lib/postgresql/data
-  #   environment:
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  #     POSTGRES_USER: ${POSTGRES_USER}
-  #     POSTGRES_DB: ${POSTGRES_DB}
-  #     TZ: ${TZ}
-  #   labels:
-  #     meta.name: 'postgres'
-  #     meta.stack: 'admin'
-  #     traefik.enable: 'true'
-  #     traefik.tcp.services.postgres.loadbalancer.server.port: '5432'
-  #     traefik.tcp.routers.postgres.rule: 'HostSNI(`postgres.${ROOT_FQDN}`)'
-  #     traefik.tcp.routers.postgres.entrypoints: 'db'
-  #     traefik.http.routers.postgres.tls: 'true'
-
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   container_name: 'pgadmin'
-  #   restart: unless-stopped
-  #   networks:
-  #   - admin-network
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-  #     TZ: ${TZ}
-  #   labels:
-  #     meta.name: 'pdadmin'
-  #     meta.stack: 'admin'
-  #     traefik.enable: 'true'
-  #     traefik.http.services.pgadmin.loadbalancer.server.port: '80'
-  #     traefik.http.routers.pgadmin.rule: 'Host(`pgadmin.${ROOT_FQDN}`)'
-  #     traefik.http.routers.pgadmin.entrypoints: 'websecure'
-  #     traefik.http.routers.pgadmin.tls: 'true'
-  
-  gotify:
-    image: gotify/server:latest
-    container_name: 'gotify'
-    restart: unless-stopped
-    networks:
-    - admin-network
-    volumes:
-      - gotify_data:/app/data
-      # todo
-    environment:
-      TZ: ${TZ}
-    labels:
-      meta.name: 'gotify'
-      meta.stack: 'admin'
-      traefik.enable: 'true'
-      traefik.http.services.gotify.loadbalancer.server.port: '80'
-      traefik.http.routers.gotify.rule: 'Host(`gotify.${ROOT_FQDN}`)'
-      traefik.http.routers.gotify.entrypoints: 'websecure'
-      traefik.http.routers.gotify.tls: 'true'
- 
-  hoarder:
-    image: ghcr.io/hoarder-app/hoarder:0.21.0
-    container_name: 'hoarder'
-    restart: unless-stopped
-    networks:
-    - admin-network
-    volumes:
-      - hoarder_data:/data
-    environment:
-      MEILI_ADDR: http://hoarder_meilisearch:7700
-      BROWSER_WEB_URL: http://hoarder_chrome:9222
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      INFERENCE_IMAGE_MODEL: gpt-4o-mini
-      INFERENCE_TEXT_MODEL: gpt-4o-mini
-      DATA_DIR: /data
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
-      NEXTAUTH_URL: hoarder.${ROOT_FQDN}
-      NEXTAUTH_URL_INTERNAL: http://localhost:3000
-      # DISABLE_PASSWORD_AUTH: true
-      OAUTH_WELLKNOWN_URL: https://auth.kugel.homes/.well-known/openid-configuration
-      OAUTH_CLIENT_SECRET: insecure_secret
-      OAUTH_CLIENT_ID: hoarder
-      # OAUTH_SCOPE:
-      OAUTH_PROVIDER_NAME: authelia
-
-      TZ: ${TZ}
-    labels:
-      meta.name: 'hoarder'
-      meta.stack: 'admin'
-      traefik.enable: 'true'
-      traefik.http.services.hoarder.loadbalancer.server.port: '3000'
-      traefik.http.routers.hoarder.rule: 'Host(`hoarder.${ROOT_FQDN}`)'
-      traefik.http.routers.hoarder.entrypoints: 'websecure'
-      traefik.http.routers.hoarder.tls: 'true'   
-      traefik.http.routers.hoarder.middlewares: 'authelia@docker'
-
-  hoarder_chrome:
-    image: gcr.io/zenika-hub/alpine-chrome:123
-    container_name: 'hoarder_chrome'
-    restart: unless-stopped
-    networks:
-    - admin-network
-    environment:
-      TZ: ${TZ}
-    command:
-      - --no-sandbox
-      - --disable-gpu
-      - --disable-dev-shm-usage
-      - --remote-debugging-address=0.0.0.0
-      - --remote-debugging-port=9222
-      - --hide-scrollbars
-    labels:
-      meta.name: 'hoarder_chrome'
-      meta.stack: 'admin'
-
-  hoarder_meilisearch:
-    image: getmeili/meilisearch:v1.11.1
-    container_name: 'hoarder_meilisearch'
-    restart: unless-stopped
-    networks:
-    - admin-network
-    environment:
-      MEILI_NO_ANALYTICS: "true"
-      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
-      TZ: ${TZ}
-    volumes:
-      - hoarder_meilisearch:/meili_data
-    labels:
-      meta.name: 'hoarder_meilisearch'
-      meta.stack: 'admin'
-  
-  whoami:
-    image: 'traefik/whoami'
-    container_name: 'whoami'
-    restart: 'unless-stopped'
-    networks:
-    - admin-network    
-    labels:
-      meta.name: 'whoami'
-      meta.stack: 'admin'
-      traefik.enable: 'true'
-      traefik.http.services.whoami.loadbalancer.server.port: '80'
-      traefik.http.routers.whoami.rule: 'Host(`whoami.${ROOT_FQDN}`)'
-      traefik.http.routers.whoami.entrypoints: 'websecure'
-      traefik.http.routers.whoami.tls: 'true'
-      traefik.http.routers.whoami.middlewares: 'authelia@docker'
-
-
-  authelia:
-    image: 'authelia/authelia:4.38'
-    container_name: 'authelia'
-    restart: unless-stopped
-    user: "${UID}:${GID}"
-    volumes:
-      - './authelia/secrets:/secrets:ro'
-      - './authelia/config:/config'
-      - './authelia/logs:/var/log/authelia/'
-    networks:
-    - admin-network 
-    labels:
-      ## Expose Authelia through Traefik
-      meta.name: 'authelia'
-      meta.stack: 'admin'
-      traefik.enable: 'true'
-      traefik.http.services.auth.loadbalancer.server.port: '9091'
-      traefik.http.routers.auth.rule: 'Host(`auth.${ROOT_FQDN}`)'
-      traefik.http.routers.auth.entrypoints: 'websecure'
-      traefik.http.routers.auth.tls: 'true'
-      ## Setup Authelia ForwardAuth Middlewares
-      # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
-    environment:
-      TZ: ${TZ}
-      X_AUTHELIA_CONFIG_FILTERS: 'template' 
-
-
-
-    # ports:
-    #   # <Host Port>:<Container Port>
-    #   - 3001:3001
-     
   
 
 
