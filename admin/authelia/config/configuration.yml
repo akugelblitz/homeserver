@@ -64,7 +64,7 @@ access_control:
   rules:
     # Rules applied to everyone
     - domain: traefik.kugel.homes
-      policy: bypass
+      policy: one_factor
     - domain: whoami.kugel.homes
       policy: one_factor
     - domain: hoarder.kugel.homes
