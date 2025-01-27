@@ -1,136 +1,15 @@
 networks:
   backcone-network:
-    name: ${STACK}
-    attachable: true
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: ${ADMIN_NET_SUBNET}
-          ip_range: ${ADMIN_NET_SUBNET}
+    name: ${BACKBONE_STACK}
+    external: true
           
 
 volumes:
-  tailscale_data:
-  traefik_certs:
   portainer_data:
-  beszel_data:
-  postgres_data:
   uptime_kuma_data:
 
 
 services:
-  tailscale-traefik:
-    image: tailscale/tailscale:v1.76.6
-    container_name: tailscale
-    hostname: traefik
-    restart: unless-stopped
-    networks:
-    - backcone-network
-    environment:
-      TS_AUTHKEY: ${TS_AUTHKEY}
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: false
-      TZ: ${TZ}
-    volumes:
-      - tailscale_data:/var/lib/tailscale
-      - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - net_admin
-      - sys_module
-    labels:
-      meta.name: 'tailscale'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) '
-      traefik.http.routers.traefik.entrypoints: 'websecure'
-      traefik.http.routers.traefik.service: 'api@internal'
-      traefik.http.services.traefik.loadbalancer.server.port: '8080'
-      traefik.http.routers.traefik.tls: 'true'
-      traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
-      traefik.http.routers.traefik.tls.domains[0].main: '$ROOT_FQDN'
-      traefik.http.routers.traefik.tls.domains[0].sans: '*.$ROOT_FQDN'
-      # Authelia
-      traefik.http.routers.traefik.middlewares: 'authelia@docker'
-      traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      ## The following commented line is for configuring the Authelia URL in the proxy. We strongly suggest this is
-      ## configured in the Session Cookies section of the Authelia configuration.
-      # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth?authelia_url=https%3A%2F%2Fauth.example.com%2F'
-      traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
-      
-  traefik:
-    image: traefik:v3.2.3
-    container_name: 'traefik'
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    depends_on:
-      - tailscale-traefik
-      # - authelia
-    network_mode: service:tailscale-traefik
-    # ports:
-    #   - "80:80"
-    #   - "443:443"
-    #   - "8080:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik.yaml:/etc/traefik/traefik.yaml
-      - traefik_certs:/certs
-      # - ./dynamic_conf.yml:/etc/traefik/dynamic_conf.yml
-      # - ./traefik/acme.json:/acme.json
-      # - ./traefik/traefik.log:/traefik.log
-    environment:
-      CF_API_EMAIL: ${CF_API_EMAIL}
-      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
-      TZ: ${TZ}
-    labels:
-      meta.name: 'traefik'
-      meta.stack: ${STACK}
-      # traefik.enable: 'true'
-      # traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))'
-      # traefik.http.routers.traefik.entrypoints: 'websecure'
-      # # traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
-      # traefik.http.routers.traefik.service: 'api@internal'
-      # traefik.http.services.traefik.loadbalancer.server.port: '8080'
-
-      # Authelia
-      # traefik.http.routers.api.middlewares: 'authelia@docker'
-      # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      # ## The following commented line is for configuring the Authelia URL in the proxy. We strongly suggest this is
-      # ## configured in the Session Cookies section of the Authelia configuration.
-      # # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth?authelia_url=https%3A%2F%2Fauth.example.com%2F'
-      # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
-
-  authelia:
-    image: 'authelia/authelia:4.38'
-    container_name: 'authelia'
-    restart: unless-stopped
-    user: "${UID}:${GID}"
-    volumes:
-      - './authelia/secrets:/secrets:ro'
-      - './authelia/config:/config'
-      - './authelia/logs:/var/log/authelia/'
-    networks:
-    - backcone-network 
-    labels:
-      ## Expose Authelia through Traefik
-      meta.name: 'authelia'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.auth.loadbalancer.server.port: '9091'
-      traefik.http.routers.auth.rule: 'Host(`auth.${ROOT_FQDN}`)'
-      traefik.http.routers.auth.entrypoints: 'websecure'
-      traefik.http.routers.auth.tls: 'true'
-      ## Setup Authelia ForwardAuth Middlewares
-      # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
-    environment:
-      TZ: ${TZ}
-      X_AUTHELIA_CONFIG_FILTERS: 'template' 
-
   portainer:
     image: portainer/portainer-ce:2.24.0-alpine
     container_name: 'portainer'

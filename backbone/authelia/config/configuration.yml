@@ -13,8 +13,9 @@ server:
 
 log:
   level: debug
+  # file_path: '/config/authelia.%d.log'
 
-theme: dark
+theme: light
       
 totp:
   issuer: authelia.com
