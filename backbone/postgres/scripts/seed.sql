@@ -1,3 +1,7 @@
+-- SCRIPT: 
+-- cat /app/seed.sql | PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f-
+
+-- authelia 
 SELECT 'CREATE DATABASE authelia'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'authelia')\gexec
 
@@ -19,3 +23,27 @@ $do$;
 
 GRANT CONNECT ON DATABASE authelia TO authelia; 
 GRANT ALL ON SCHEMA public TO authelia;
+
+
+-- gotify
+SELECT 'CREATE DATABASE gotify'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'gotify')\gexec
+
+DO
+$do$
+BEGIN
+   IF EXISTS (
+      SELECT FROM pg_catalog.pg_roles
+      WHERE  rolname = 'gotify') THEN
+
+      RAISE NOTICE 'Role "gotify" already exists. Skipping.';
+   ELSE
+      CREATE ROLE gotify LOGIN PASSWORD 'gotify';
+   END IF;
+END
+$do$;
+
+\c gotify
+
+GRANT CONNECT ON DATABASE gotify TO gotify; 
+GRANT ALL ON SCHEMA public TO gotify;
