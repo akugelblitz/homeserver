@@ -1,4 +1,4 @@
-.env
+*.env
 info.txt
 test/
 secrets
@@ -6,3 +6,5 @@ logs
 db.sqlite3
 notification.txt
 *.log
+configuration.yml
+users_database.yml

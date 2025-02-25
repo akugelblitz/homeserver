@@ -25,6 +25,10 @@ services:
     restart: unless-stopped
     networks:
     - backbone-network
+    # ports:
+      # - "80:80"
+      # - "443:443"
+      # - "8080:8080"
     environment:
       TS_AUTHKEY: ${TS_AUTHKEY}
       TS_STATE_DIR: /var/lib/tailscale
@@ -56,6 +60,13 @@ services:
       # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth?authelia_url=https%3A%2F%2Fauth.example.com%2F'
       traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
       traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
+
+      traefik.http.services.beszel.loadbalancer.server.port: '8090'
+      traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
+      traefik.http.routers.beszel.entrypoints: 'websecure'
+      traefik.http.routers.beszel.tls: 'true'
+      traefik.http.routers.beszel.service: 'beszel'
+
       
   traefik:
     image: traefik:v3.2.3
@@ -66,10 +77,7 @@ services:
     depends_on:
       - tailscale
     network_mode: service:tailscale
-    # ports:
-    #   - "80:80"
-    #   - "443:443"
-    #   - "8080:8080"
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik.yaml:/etc/traefik/traefik.yaml
@@ -174,12 +182,15 @@ services:
     image: 'henrygd/beszel:latest' 
     container_name: 'beszel'
     restart: unless-stopped
-    networks:
-    - backbone-network
+    depends_on:
+      - tailscale
+    network_mode: service:tailscale
+    # networks:
+    # - backbone-network
     volumes:
       - beszel_data:/beszel_data
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
+    # extra_hosts:
+    #   - 'host.docker.internal:host-gateway'
       # - 'gotify.${ROOT_FQDN}:${TRAEFIK_IP}'
     environment:
       TZ: ${TZ}
@@ -189,11 +200,11 @@ services:
     labels:
       meta.name: 'beszel'
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.beszel.loadbalancer.server.port: '8090'
-      traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
-      traefik.http.routers.beszel.entrypoints: 'websecure'
-      traefik.http.routers.beszel.tls: 'true'
+      # traefik.enable: 'true'
+      # traefik.http.services.beszel.loadbalancer.server.port: '8090'
+      # traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
+      # traefik.http.routers.beszel.entrypoints: 'websecure'
+      # traefik.http.routers.beszel.tls: 'true'
       # traefik.http.routers.beszel.middlewares: 'authelia@docker'
 
   beszel-agent:

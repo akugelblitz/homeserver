@@ -47,3 +47,28 @@ $do$;
 
 GRANT CONNECT ON DATABASE gotify TO gotify; 
 GRANT ALL ON SCHEMA public TO gotify;
+
+
+
+-- firefly
+SELECT 'CREATE DATABASE firefly'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'firefly')\gexec
+
+DO
+$do$
+BEGIN
+   IF EXISTS (
+      SELECT FROM pg_catalog.pg_roles
+      WHERE  rolname = 'firefly') THEN
+
+      RAISE NOTICE 'Role "firefly" already exists. Skipping.';
+   ELSE
+      CREATE ROLE firefly LOGIN PASSWORD 'firefly';
+   END IF;
+END
+$do$;
+
+\c firefly
+
+GRANT CONNECT ON DATABASE firefly TO firefly; 
+GRANT ALL ON SCHEMA public TO firefly;
