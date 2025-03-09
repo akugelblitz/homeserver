@@ -1,5 +1,6 @@
 include:
   - immich-docker-compose.yaml
+  - hoarder-docker-compose.yaml
 
 networks:
   backbone-network:
@@ -9,8 +10,6 @@ networks:
 
 volumes:
   gotify_data:
-  hoarder_data:
-  hoarder_meilisearch:
   jellyfin_config:
   jellyfin_cache:
   open_webui_data:
@@ -43,76 +42,6 @@ services:
   #     traefik.http.routers.gotify.rule: 'Host(`gotify.${ROOT_FQDN}`)'
   #     traefik.http.routers.gotify.entrypoints: 'websecure'
   #     traefik.http.routers.gotify.tls: 'true'
- 
-  hoarder:
-    image: ghcr.io/hoarder-app/hoarder:0.22.0
-    container_name: 'hoarder'
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    volumes:
-      - hoarder_data:/data
-    environment:
-      MEILI_ADDR: http://hoarder_meilisearch:7700
-      BROWSER_WEB_URL: http://hoarder_chrome:9222
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      INFERENCE_IMAGE_MODEL: gpt-4o-mini
-      INFERENCE_TEXT_MODEL: gpt-4o-mini
-      DATA_DIR: /data
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
-      NEXTAUTH_URL: hoarder.${ROOT_FQDN}
-      NEXTAUTH_URL_INTERNAL: http://localhost:3000
-      DISABLE_PASSWORD_AUTH: true
-      OAUTH_WELLKNOWN_URL: https://auth.${ROOT_FQDN}/.well-known/openid-configuration
-      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET}
-      OAUTH_PROVIDER_NAME: authelia
-      TZ: ${TZ}
-    labels:
-      meta.name: 'hoarder'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.hoarder.loadbalancer.server.port: '3000'
-      traefik.http.routers.hoarder.rule: 'Host(`hoarder.${ROOT_FQDN}`)'
-      traefik.http.routers.hoarder.entrypoints: 'websecure'
-      traefik.http.routers.hoarder.tls: 'true'   
-      # traefik.http.routers.hoarder.middlewares: 'authelia@docker'
-
-  hoarder_chrome:
-    image: gcr.io/zenika-hub/alpine-chrome:123
-    container_name: 'hoarder_chrome'
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    environment:
-      TZ: ${TZ}
-    command:
-      - --no-sandbox
-      - --disable-gpu
-      - --disable-dev-shm-usage
-      - --remote-debugging-address=0.0.0.0
-      - --remote-debugging-port=9222
-      - --hide-scrollbars
-    labels:
-      meta.name: 'hoarder_chrome'
-      meta.stack: ${STACK}
-
-  hoarder_meilisearch:
-    image: getmeili/meilisearch:v1.11.1
-    container_name: 'hoarder_meilisearch'
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    environment:
-      MEILI_NO_ANALYTICS: "true"
-      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
-      TZ: ${TZ}
-    volumes:
-      - hoarder_meilisearch:/meili_data
-    labels:
-      meta.name: 'hoarder_meilisearch'
-      meta.stack: ${STACK}
   
   whoami:
     image: 'traefik/whoami'
