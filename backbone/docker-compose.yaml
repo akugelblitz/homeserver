@@ -13,8 +13,9 @@ networks:
 volumes:
   tailscale_data:
   traefik_certs:
-  beszel_data:
   postgres_data:
+  pihole_data:
+
 
 
 services:
@@ -61,11 +62,11 @@ services:
       traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
       traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
 
-      traefik.http.services.beszel.loadbalancer.server.port: '8090'
-      traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
-      traefik.http.routers.beszel.entrypoints: 'websecure'
-      traefik.http.routers.beszel.tls: 'true'
-      traefik.http.routers.beszel.service: 'beszel'
+      # traefik.http.services.beszel.loadbalancer.server.port: '8090'
+      # traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
+      # traefik.http.routers.beszel.entrypoints: 'websecure'
+      # traefik.http.routers.beszel.tls: 'true'
+      # traefik.http.routers.beszel.service: 'beszel'
 
       
   traefik:
@@ -110,7 +111,7 @@ services:
 
   postgres:
     image: postgres:16.3
-    # command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    command: ["bash", "-c", "docker-entrypoint.sh postgres & sleep 10 && sh /app/create-dbs.sh && tail -f /dev/null"]
     container_name: 'postgres'
     restart: unless-stopped
     networks:
@@ -122,6 +123,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${ADMIN_USER}
       POSTGRES_PASSWORD: ${ADMIN_PASS}
+      PGPASSWORD: ${ADMIN_PASS}
       TZ: ${TZ}
     # post_start:
     #   - command: cat /app/seed.sql | PGPASSWORD=${ADMIN_PASS} psql -h localhost -U ${ADMIN_USER} -d ${POSTGRES_DB} -f-
@@ -152,12 +154,15 @@ services:
       postgres:
         condition: service_healthy
         restart: true
+    networks:
+    - backbone-network 
     volumes:
       # - './authelia/secrets:/secrets:ro'
       - './authelia/config:/config'
       # - './authelia/logs:/var/log/authelia/'
-    networks:
-    - backbone-network 
+    environment:
+      TZ: ${TZ}
+      X_AUTHELIA_CONFIG_FILTERS: 'template' 
     labels:
       ## Expose Authelia through Traefik
       meta.name: 'authelia'
@@ -171,57 +176,41 @@ services:
       # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
       # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
       # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
-    environment:
-      TZ: ${TZ}
-      X_AUTHELIA_CONFIG_FILTERS: 'template' 
 
 
-
-     
-  beszel:
-    image: 'henrygd/beszel:latest' 
-    container_name: 'beszel'
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    hostname: pihole
     restart: unless-stopped
-    depends_on:
-      - tailscale
-    network_mode: service:tailscale
-    # networks:
-    # - backbone-network
+    ports:
+      # DNS Ports
+      - "53:53/tcp"
+      - "53:53/udp"
+    networks:
+    - backbone-network 
     volumes:
-      - beszel_data:/beszel_data
-    # extra_hosts:
-    #   - 'host.docker.internal:host-gateway'
-      # - 'gotify.${ROOT_FQDN}:${TRAEFIK_IP}'
+      - pihole_data:/etc/pihole
     environment:
       TZ: ${TZ}
-      LOG_LEVEL: debug
-      USER_CREATION: true
-      # DISABLE_PASSWORD_AUTH: true
+      FTLCONF_webserver_api_password: ''
+      FTLCONF_dns_upstreams: '1.1.1.1;1.0.0.1'
+      FTLCONF_dns_listeningMode: 'all'
+    cap_add:
+      # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+      # Required if you are using Pi-hole as your DHCP server, else not needed
+      - NET_ADMIN
+      # Required if you are using Pi-hole as your NTP client to be able to set the host's system time
+      - SYS_TIME
+      # Optional, if Pi-hole should get some more processing time
+      - SYS_NICE
     labels:
-      meta.name: 'beszel'
+      meta.name: 'pihole'
       meta.stack: ${STACK}
-      # traefik.enable: 'true'
-      # traefik.http.services.beszel.loadbalancer.server.port: '8090'
-      # traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
-      # traefik.http.routers.beszel.entrypoints: 'websecure'
-      # traefik.http.routers.beszel.tls: 'true'
-      # traefik.http.routers.beszel.middlewares: 'authelia@docker'
-
-  beszel-agent:
-    image: 'henrygd/beszel-agent:latest'
-    container_name: 'beszel-agent'
-    restart: unless-stopped
-    network_mode: host
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      PORT: 45876 
-      KEY: ${BESZEL_PUBLIC_KEY}
-      LOG_LEVEL: debug
-      TZ: ${TZ}
-    labels:
-      meta.name: 'beszel-agent'
-      meta.stack: ${STACK}
-  
+      traefik.enable: 'true'
+      traefik.http.services.pihole.loadbalancer.server.port: '80'
+      traefik.http.routers.pihole.rule: 'Host(`pihole.${ROOT_FQDN}`)'
+      traefik.http.routers.pihole.entrypoints: 'websecure'
+      traefik.http.routers.pihole.tls: 'true'
 
 

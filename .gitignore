@@ -8,3 +8,4 @@ notification.txt
 *.log
 configuration.yml
 users_database.yml
+fetch/

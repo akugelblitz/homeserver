@@ -16,65 +16,34 @@ volumes:
 
 
 
-services:
-
-  # actual_budget:
-  #   image: docker.io/actualbudget/actual-server:25.1.0-alpine
-  #   container_name: 'actual'
+services:    
+  # gotify:
+  #   image: gotify/server:2.6.1
+  #   container_name: 'gotify'
   #   restart: unless-stopped
   #   networks:
   #   - backbone-network
   #   volumes:
-  #     - actual_data:/data
+  #     - gotify_data:/app/data
+  #     # - ./gotify/config.yml:/etc/gotify/config.yml
+  #     # todo
   #   environment:
-  #     ACTUAL_LOGIN_METHOD: openid
-  #     ACTUAL_OPENID_DISCOVERY_URL: ${ACTUAL_OPENID_DISCOVERY_URL}
-  #     ACTUAL_OPENID_CLIENT_ID: ${ACTUAL_OPENID_CLIENT_ID}
-  #     ACTUAL_OPENID_CLIENT_SECRET: ${ACTUAL_OPENID_CLIENT_SECRET}
-  #     ACTUAL_OPENID_SERVER_HOSTNAME: ${ACTUAL_OPENID_SERVER_HOSTNAME}
+  #     # GOTIFY_DATABASE_DIALECT: postgres
+  #     # GOTIFY_DATABASE_CONNECTION: ${GOTIFY_DATABASE_CONNECTION}
+  #     GOTIFY_DEFAULTUSER_NAME: ${ADMIN_USER}
+  #     GOTIFY_DEFAULTUSER_PASS: ${ADMIN_PASS}
   #     TZ: ${TZ}
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "node src/scripts/health-check.js"]
-  #     interval: 60s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 20s
   #   labels:
-  #     meta.name: 'actual'
+  #     meta.name: 'gotify'
   #     meta.stack: ${STACK}
   #     traefik.enable: 'true'
-  #     traefik.http.services.actual.loadbalancer.server.port: '5006'
-  #     traefik.http.routers.actual.rule: 'Host(`actual.${ROOT_FQDN}`)'
-  #     traefik.http.routers.actual.entrypoints: 'websecure'
-  #     traefik.http.routers.actual.tls: 'true'
-    
-  gotify:
-    image: gotify/server:2.6.1
-    container_name: 'gotify'
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    volumes:
-      - gotify_data:/app/data
-      # - ./gotify/config.yml:/etc/gotify/config.yml
-      # todo
-    environment:
-      # GOTIFY_DATABASE_DIALECT: postgres
-      # GOTIFY_DATABASE_CONNECTION: ${GOTIFY_DATABASE_CONNECTION}
-      GOTIFY_DEFAULTUSER_NAME: ${ADMIN_USER}
-      GOTIFY_DEFAULTUSER_PASS: ${ADMIN_PASS}
-      TZ: ${TZ}
-    labels:
-      meta.name: 'gotify'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.gotify.loadbalancer.server.port: '80'
-      traefik.http.routers.gotify.rule: 'Host(`gotify.${ROOT_FQDN}`)'
-      traefik.http.routers.gotify.entrypoints: 'websecure'
-      traefik.http.routers.gotify.tls: 'true'
+  #     traefik.http.services.gotify.loadbalancer.server.port: '80'
+  #     traefik.http.routers.gotify.rule: 'Host(`gotify.${ROOT_FQDN}`)'
+  #     traefik.http.routers.gotify.entrypoints: 'websecure'
+  #     traefik.http.routers.gotify.tls: 'true'
  
   hoarder:
-    image: ghcr.io/hoarder-app/hoarder:0.21.0
+    image: ghcr.io/hoarder-app/hoarder:0.22.0
     container_name: 'hoarder'
     restart: unless-stopped
     networks:
@@ -157,34 +126,34 @@ services:
       traefik.http.routers.whoami.rule: 'Host(`whoami.${ROOT_FQDN}`)'
       traefik.http.routers.whoami.entrypoints: 'websecure'
       traefik.http.routers.whoami.tls: 'true'
-      traefik.http.routers.whoami.middlewares: 'authelia@docker'
+      # traefik.http.routers.whoami.middlewares: 'authelia@docker'
 
-  jellyfin:
-    image: jellyfin/jellyfin:10.10.3
-    container_name: 'jellyfin'
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    user: 1000:1000
-    group_add:
-      - "989"
-    volumes:
-      - "jellyfin_config:/config"
-      - "jellyfin_cache:/cache"
-      - "${MEDIA_DIRECTORY}:/media"
-    devices:
-      - /dev/dri/renderD128:/dev/dri/renderD128
-      - /dev/dri/card1:/dev/dri/card0
-    environment:
-      - TZ=${TZ}
-      # - JELLYFIN_PublishedServerUrl=${JELLYFIN_URL}  # Include protocol prefix (e.g. `https://)
-      # - HEALTHCHECK_URL=http://localhost:80/health  # Change the server's jellyfleet port to 8096 here or to 80 in /config/config/network.xml
-    labels:
-      traefik.enable: 'true'
-      traefik.http.services.jellyfin.loadbalancer.server.port: '8096'
-      traefik.http.routers.jellyfin.rule: 'Host(`jellyfin.${ROOT_FQDN}`)'
-      traefik.http.routers.jellyfin.entrypoints: 'websecure'
-      traefik.http.routers.jellyfin.tls: 'true'
+  # jellyfin:
+  #   image: jellyfin/jellyfin:10.10.3
+  #   container_name: 'jellyfin'
+  #   restart: unless-stopped
+  #   networks:
+  #   - backbone-network
+  #   user: 1000:1000
+  #   group_add:
+  #     - "989"
+  #   volumes:
+  #     - "jellyfin_config:/config"
+  #     - "jellyfin_cache:/cache"
+  #     - "${MEDIA_DIRECTORY}:/media"
+  #   devices:
+  #     - /dev/dri/renderD128:/dev/dri/renderD128
+  #     - /dev/dri/card1:/dev/dri/card0
+  #   environment:
+  #     - TZ=${TZ}
+  #     # - JELLYFIN_PublishedServerUrl=${JELLYFIN_URL}  # Include protocol prefix (e.g. `https://)
+  #     # - HEALTHCHECK_URL=http://localhost:80/health  # Change the server's jellyfleet port to 8096 here or to 80 in /config/config/network.xml
+  #   labels:
+  #     traefik.enable: 'true'
+  #     traefik.http.services.jellyfin.loadbalancer.server.port: '8096'
+  #     traefik.http.routers.jellyfin.rule: 'Host(`jellyfin.${ROOT_FQDN}`)'
+  #     traefik.http.routers.jellyfin.entrypoints: 'websecure'
+  #     traefik.http.routers.jellyfin.tls: 'true'
 
   # jellyseerr:
   #   image: fallenbagel/jellyseerr:latest
@@ -227,6 +196,7 @@ services:
       OPENID_PROVIDER_URL: 'https://auth.kugel.homes/.well-known/openid-configuration'
       OAUTH_PROVIDER_NAME: 'Authelia'
       OAUTH_SCOPES: 'openid email profile groups'
+      DEFAULT_USER_ROLE: user
       # ENABLE_OAUTH_ROLE_MANAGEMENT: 'true'
       # OAUTH_ALLOWED_ROLES: 'openwebui,openwebui-admin'
       # OAUTH_ADMIN_ROLES: 'openwebui-admin'
@@ -271,29 +241,20 @@ services:
       COOKIE_PATH: "/"
       COOKIE_SECURE: false
       COOKIE_SAMESITE: lax
-      MAIL_MAILER: log
+      MAIL_MAILER: smtp
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_ENCRYPTION: null
       SEND_ERROR_MESSAGE: true
       SEND_REPORT_JOURNALS: true
-      ENABLE_EXTERNAL_MAP: false
-      ENABLE_EXCHANGE_RATES: false
-      ENABLE_EXTERNAL_RATES: false
-      MAP_DEFAULT_LAT: 51.983333
-      MAP_DEFAULT_LONG: 5.916667
-      MAP_DEFAULT_ZOOM: 6
-      AUTHENTICATION_GUARD: remote_user_guard
+      AUTHENTICATION_GUARD: web
       AUTHENTICATION_GUARD_HEADER: HTTP_REMOTE_USER
-      AUTHENTICATION_GUARD_EMAIL: REMOTE_EMAIL
       DISABLE_FRAME_HEADER: false
       DISABLE_CSP_HEADER: false
-      ALLOW_WEBHOOKS: false
-      DKR_CHECK_SQLITE: true
-      APP_NAME: FireflyIII
-      BROADCAST_DRIVER: log
-      QUEUE_DRIVER: sync
-      CACHE_PREFIX: firefly
-      USE_RUNNING_BALANCE: false
-      FIREFLY_III_LAYOUT: v1
-      QUERY_PARSER_IMPLEMENTATION: legacy
+      ALLOW_WEBHOOKS: true
       APP_URL: https://firefly.${ROOT_FQDN}
     labels:
       traefik.enable: 'true'
@@ -301,9 +262,52 @@ services:
       traefik.http.routers.firefly.rule: 'Host(`firefly.${ROOT_FQDN}`)'
       traefik.http.routers.firefly.entrypoints: 'websecure'
       traefik.http.routers.firefly.tls: 'true'
-      traefik.http.routers.firefly.middlewares: 'authelia@docker'
+      # traefik.http.routers.firefly.middlewares: 'authelia@docker'
 
 
-
+  pico:
+    image: cioraneanu/firefly-pico:latest
+    container_name: pico
+    restart: unless-stopped
+    networks:
+    - backbone-network
+    volumes:
+      - firefly_data:/var/www/html/storage/upload
+    environment:
+      FIREFLY_URL: http://firefly:8080
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: pico
+      DB_USERNAME: pico
+      DB_PASSWORD: pico
+      TZ: ${TZ}
+    labels:
+      traefik.enable: 'true'
+      traefik.http.services.pico.loadbalancer.server.port: '80'
+      traefik.http.routers.pico.rule: 'Host(`pico.${ROOT_FQDN}`)'
+      traefik.http.routers.pico.entrypoints: 'websecure'
+      traefik.http.routers.pico.tls: 'true'
+  
+  glance:
+    image: glanceapp/glance
+    container_name: glance
+    restart: unless-stopped
+    networks:
+    - backbone-network
+    environment:
+      TZ: ${TZ}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+    env_file: glance.env
+    volumes:
+      - ./glance/config:/app/config
+      - ./glance/assets:/app/assets
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      traefik.enable: 'true'
+      traefik.http.services.glance.loadbalancer.server.port: '8080'
+      traefik.http.routers.glance.rule: 'Host(`glance.${ROOT_FQDN}`)'
+      traefik.http.routers.glance.entrypoints: 'websecure'
+      traefik.http.routers.glance.tls: 'true'
 
 

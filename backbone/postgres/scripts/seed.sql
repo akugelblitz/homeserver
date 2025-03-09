@@ -72,3 +72,52 @@ $do$;
 
 GRANT CONNECT ON DATABASE firefly TO firefly; 
 GRANT ALL ON SCHEMA public TO firefly;
+
+
+-- pico
+SELECT 'CREATE DATABASE pico'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'pico')\gexec
+
+DO
+$do$
+BEGIN
+   IF EXISTS (
+      SELECT FROM pg_catalog.pg_roles
+      WHERE  rolname = 'pico') THEN
+
+      RAISE NOTICE 'Role "pico" already exists. Skipping.';
+   ELSE
+      CREATE ROLE pico LOGIN PASSWORD 'pico';
+   END IF;
+END
+$do$;
+
+\c pico
+
+GRANT CONNECT ON DATABASE pico TO pico; 
+GRANT ALL ON SCHEMA public TO pico;
+
+
+
+-- dikodiko
+SELECT 'CREATE DATABASE dikodiko'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'dikodiko')\gexec
+
+DO
+$do$
+BEGIN
+   IF EXISTS (
+      SELECT FROM pg_catalog.pg_roles
+      WHERE  rolname = 'dikodiko') THEN
+
+      RAISE NOTICE 'Role "dikodiko" already exists. Skipping.';
+   ELSE
+      CREATE ROLE dikodiko LOGIN PASSWORD 'dikodiko';
+   END IF;
+END
+$do$;
+
+\c dikodiko
+
+GRANT CONNECT ON DATABASE dikodiko TO dikodiko; 
+GRANT ALL ON SCHEMA public TO dikodiko;

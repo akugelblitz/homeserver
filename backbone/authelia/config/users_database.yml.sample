@@ -1,0 +1,19 @@
+users:
+  admin:
+    disabled: false
+    displayname: "Admin"
+    password: "..."  
+    email: homeserver@kugel.anonaddy.com
+    groups:
+      - admin
+      - dev
+  aditya:
+    disabled: false
+    displayname: "Aditya"
+    password: "..."  
+    email: aditya@kugel.homes
+    groups:
+      - admin
+      - dev
+...
+# yamllint enable rule:line-length

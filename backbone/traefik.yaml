@@ -53,7 +53,7 @@ accessLog:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: aditya.1910.sharma@gmail.com
+      email: homeserver@kugel.homes
       storage: /certs/acme.json
       caServer: https://acme-v02.api.letsencrypt.org/directory # production (default)
       # caServer: https://acme-staging-v02.api.letsencrypt.org/directory # staging
