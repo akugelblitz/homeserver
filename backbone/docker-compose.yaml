@@ -181,7 +181,7 @@ services:
   pihole:
     image: pihole/pihole:latest
     container_name: pihole
-    hostname: pihole
+    hostname: ${HOSTNAME}
     restart: unless-stopped
     ports:
       # DNS Ports

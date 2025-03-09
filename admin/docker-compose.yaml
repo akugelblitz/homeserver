@@ -58,6 +58,7 @@ services:
   beszel:
     image: 'henrygd/beszel:latest' 
     container_name: 'beszel'
+
     restart: unless-stopped
     # depends_on:
     #   - tailscale
@@ -87,6 +88,7 @@ services:
   beszel-agent:
     image: 'henrygd/beszel-agent:latest'
     container_name: 'beszel-agent'
+    hostname: ${HOSTNAME}
     restart: unless-stopped
     networks:
     - backbone-network
