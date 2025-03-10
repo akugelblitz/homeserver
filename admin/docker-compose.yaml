@@ -52,9 +52,6 @@ services:
       traefik.http.routers.kuma.tls: 'true'
       
 
-     
-  
-
   beszel:
     image: 'henrygd/beszel:latest' 
     container_name: 'beszel'
@@ -102,6 +99,8 @@ services:
     labels:
       meta.name: 'beszel-agent'
       meta.stack: ${STACK}
+  
+  
 
 
     

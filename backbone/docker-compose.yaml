@@ -14,7 +14,7 @@ volumes:
   tailscale_data:
   traefik_certs:
   postgres_data:
-  pihole_data:
+  adguard_data:
 
 
 
@@ -177,40 +177,24 @@ services:
       # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
       # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
 
+ 
 
-  pihole:
-    image: pihole/pihole:latest
-    container_name: pihole
-    hostname: ${HOSTNAME}
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
     restart: unless-stopped
     ports:
-      # DNS Ports
       - "53:53/tcp"
       - "53:53/udp"
     networks:
-    - backbone-network 
+      - backbone-network
     volumes:
-      - pihole_data:/etc/pihole
-    environment:
-      TZ: ${TZ}
-      FTLCONF_webserver_api_password: ''
-      FTLCONF_dns_upstreams: '1.1.1.1;1.0.0.1'
-      FTLCONF_dns_listeningMode: 'all'
-    cap_add:
-      # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-      # Required if you are using Pi-hole as your DHCP server, else not needed
-      - NET_ADMIN
-      # Required if you are using Pi-hole as your NTP client to be able to set the host's system time
-      - SYS_TIME
-      # Optional, if Pi-hole should get some more processing time
-      - SYS_NICE
+      - adguard_data:/opt/adguardhome
     labels:
-      meta.name: 'pihole'
+      meta.name: 'adguard'
       meta.stack: ${STACK}
       traefik.enable: 'true'
-      traefik.http.services.pihole.loadbalancer.server.port: '80'
-      traefik.http.routers.pihole.rule: 'Host(`pihole.${ROOT_FQDN}`)'
-      traefik.http.routers.pihole.entrypoints: 'websecure'
-      traefik.http.routers.pihole.tls: 'true'
-
-
+      traefik.http.services.adguard.loadbalancer.server.port: '3000'
+      traefik.http.routers.adguard.rule: 'Host(`dns.${ROOT_FQDN}`)'
+      traefik.http.routers.adguard.entrypoints: 'websecure'
+      traefik.http.routers.adguard.tls: 'true'
