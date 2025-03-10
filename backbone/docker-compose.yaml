@@ -17,7 +17,6 @@ volumes:
   adguard_data:
 
 
-
 services:
   tailscale:
     image: tailscale/tailscale:v1.76.6
@@ -53,21 +52,10 @@ services:
       traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
       traefik.http.routers.traefik.tls.domains[0].main: '$ROOT_FQDN'
       traefik.http.routers.traefik.tls.domains[0].sans: '*.$ROOT_FQDN'
-      # Authelia
       traefik.http.routers.traefik.middlewares: 'authelia@docker'
       traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      ## The following commented line is for configuring the Authelia URL in the proxy. We strongly suggest this is
-      ## configured in the Session Cookies section of the Authelia configuration.
-      # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth?authelia_url=https%3A%2F%2Fauth.example.com%2F'
       traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
       traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
-
-      # traefik.http.services.beszel.loadbalancer.server.port: '8090'
-      # traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
-      # traefik.http.routers.beszel.entrypoints: 'websecure'
-      # traefik.http.routers.beszel.tls: 'true'
-      # traefik.http.routers.beszel.service: 'beszel'
-
       
   traefik:
     image: traefik:v3.2.3
@@ -83,9 +71,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik.yaml:/etc/traefik/traefik.yaml
       - traefik_certs:/certs
-      # - ./dynamic_conf.yml:/etc/traefik/dynamic_conf.yml
-      # - ./traefik/acme.json:/acme.json
-      # - ./traefik/traefik.log:/traefik.log
     environment:
       CF_API_EMAIL: ${CF_API_EMAIL}
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
@@ -93,22 +78,7 @@ services:
     labels:
       meta.name: 'traefik'
       meta.stack: ${STACK}
-      # traefik.enable: 'true'
-      # traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))'
-      # traefik.http.routers.traefik.entrypoints: 'websecure'
-      # # traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
-      # traefik.http.routers.traefik.service: 'api@internal'
-      # traefik.http.services.traefik.loadbalancer.server.port: '8080'
-
-      # Authelia
-      # traefik.http.routers.api.middlewares: 'authelia@docker'
-      # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      # ## The following commented line is for configuring the Authelia URL in the proxy. We strongly suggest this is
-      # ## configured in the Session Cookies section of the Authelia configuration.
-      # # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth?authelia_url=https%3A%2F%2Fauth.example.com%2F'
-      # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
-
+      
   postgres:
     image: postgres:16.3
     command: ["bash", "-c", "docker-entrypoint.sh postgres & sleep 10 && sh /app/create-dbs.sh && tail -f /dev/null"]
@@ -125,11 +95,6 @@ services:
       POSTGRES_PASSWORD: ${ADMIN_PASS}
       PGPASSWORD: ${ADMIN_PASS}
       TZ: ${TZ}
-    # post_start:
-    #   - command: cat /app/seed.sql | PGPASSWORD=${ADMIN_PASS} psql -h localhost -U ${ADMIN_USER} -d ${POSTGRES_DB} -f-
-    # post_start:
-    #   - command: cat /app/seed.sql | PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f-
-    #     user: root
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB}", "-U", "${ADMIN_USER}"]
       interval: 10s
@@ -164,7 +129,6 @@ services:
       TZ: ${TZ}
       X_AUTHELIA_CONFIG_FILTERS: 'template' 
     labels:
-      ## Expose Authelia through Traefik
       meta.name: 'authelia'
       meta.stack: ${STACK}
       traefik.enable: 'true'
@@ -172,13 +136,7 @@ services:
       traefik.http.routers.auth.rule: 'Host(`auth.${ROOT_FQDN}`)'
       traefik.http.routers.auth.entrypoints: 'websecure'
       traefik.http.routers.auth.tls: 'true'
-      ## Setup Authelia ForwardAuth Middlewares
-      # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
-
- 
-
+      
   adguard:
     image: adguard/adguardhome:latest
     container_name: adguard
