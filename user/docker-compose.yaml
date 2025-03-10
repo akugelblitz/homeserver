@@ -13,11 +13,39 @@ volumes:
   jellyfin_config:
   jellyfin_cache:
   open_webui_data:
-  firefly_data:
+  maybe_data:
 
 
 
 services:    
+  maybe:
+    image: ghcr.io/maybe-finance/maybe:latest
+    container_name: 'maybe'
+    restart: unless-stopped
+    volumes:
+      - maybe_data:/rails/storage
+    networks:
+    - backbone-network 
+    environment:
+      TZ: ${TZ}
+      SELF_HOSTED: "true"
+      RAILS_FORCE_SSL: "false"
+      RAILS_ASSUME_SSL: "false"
+      GOOD_JOB_EXECUTION_MODE: async
+      SECRET_KEY_BASE: ${MAYBE_SECRET_KEY_BASE:?}
+      DB_HOST: postgres
+      POSTGRES_DB: maybe
+      POSTGRES_USER: maybe
+      POSTGRES_PASSWORD: maybe
+    labels:
+      meta.name: 'maybe'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.maybe.loadbalancer.server.port: '3000'
+      traefik.http.routers.maybe.rule: 'Host(`maybe.${ROOT_FQDN}`)'
+      traefik.http.routers.maybe.entrypoints: 'websecure'
+      traefik.http.routers.maybe.tls: 'true'
+
   # gotify:
   #   image: gotify/server:2.6.1
   #   container_name: 'gotify'
@@ -140,85 +168,6 @@ services:
       traefik.http.routers.chat.entrypoints: 'websecure'
       traefik.http.routers.chat.tls: 'true'
 
-  firefly:
-    image: fireflyiii/core:latest
-    container_name: firefly
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    volumes:
-      - firefly_data:/var/www/html/storage/upload
-    environment:
-      APP_ENV: production
-      APP_DEBUG: false
-      SITE_OWNER: ${ADMIN_EMAIL}
-      APP_KEY: ${FIREFLY_APP_KEY}
-      DEFAULT_LANGUAGE: en_US
-      DEFAULT_LOCALE: equal
-      TZ: ${TZ}
-      TRUSTED_PROXIES: "**"
-      LOG_CHANNEL: stack
-      APP_LOG_LEVEL: notice
-      AUDIT_LOG_LEVEL: emergency
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: firefly
-      DB_USERNAME: firefly
-      DB_PASSWORD: firefly
-      PGSQL_SSL_MODE: prefer
-      CACHE_DRIVER: file
-      SESSION_DRIVER: file
-      COOKIE_PATH: "/"
-      COOKIE_SECURE: false
-      COOKIE_SAMESITE: lax
-      MAIL_MAILER: smtp
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_FROM: ${MAIL_FROM}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MAIL_ENCRYPTION: null
-      SEND_ERROR_MESSAGE: true
-      SEND_REPORT_JOURNALS: true
-      AUTHENTICATION_GUARD: web
-      AUTHENTICATION_GUARD_HEADER: HTTP_REMOTE_USER
-      DISABLE_FRAME_HEADER: false
-      DISABLE_CSP_HEADER: false
-      ALLOW_WEBHOOKS: true
-      APP_URL: https://firefly.${ROOT_FQDN}
-    labels:
-      traefik.enable: 'true'
-      traefik.http.services.firefly.loadbalancer.server.port: '8080'
-      traefik.http.routers.firefly.rule: 'Host(`firefly.${ROOT_FQDN}`)'
-      traefik.http.routers.firefly.entrypoints: 'websecure'
-      traefik.http.routers.firefly.tls: 'true'
-      # traefik.http.routers.firefly.middlewares: 'authelia@docker'
-
-
-  pico:
-    image: cioraneanu/firefly-pico:latest
-    container_name: pico
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    volumes:
-      - firefly_data:/var/www/html/storage/upload
-    environment:
-      FIREFLY_URL: http://firefly:8080
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: pico
-      DB_USERNAME: pico
-      DB_PASSWORD: pico
-      TZ: ${TZ}
-    labels:
-      traefik.enable: 'true'
-      traefik.http.services.pico.loadbalancer.server.port: '80'
-      traefik.http.routers.pico.rule: 'Host(`pico.${ROOT_FQDN}`)'
-      traefik.http.routers.pico.entrypoints: 'websecure'
-      traefik.http.routers.pico.tls: 'true'
   
   glance:
     image: glanceapp/glance
