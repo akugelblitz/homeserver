@@ -5,11 +5,37 @@ networks:
           
 
 volumes:
+  gotify_data:
   portainer_data:
   uptime_kuma_data:
   beszel_data:
 
 services:
+  gotify:
+    image: gotify/server:2.6.1
+    container_name: 'gotify'
+    restart: unless-stopped
+    networks:
+    - backbone-network
+    # volumes:
+      # - gotify_data:/app/data
+      # - ./gotify/config.yml:/etc/gotify/config.yml
+      # todo
+    environment:
+      GOTIFY_DATABASE_DIALECT: postgres
+      GOTIFY_DATABASE_CONNECTION: '${GOTIFY_DATABASE_CONNECTION}'
+      GOTIFY_DEFAULTUSER_NAME: ${ADMIN_USER}
+      GOTIFY_DEFAULTUSER_PASS: ${ADMIN_PASS}
+      TZ: ${TZ}
+    labels:
+      meta.name: 'gotify'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.gotify.loadbalancer.server.port: '80'
+      traefik.http.routers.gotify.rule: 'Host(`gotify.${ROOT_FQDN}`)'
+      traefik.http.routers.gotify.entrypoints: 'websecure'
+      traefik.http.routers.gotify.tls: 'true'
+
   portainer:
     image: portainer/portainer-ce:2.24.0-alpine
     container_name: 'portainer'
@@ -99,6 +125,32 @@ services:
     labels:
       meta.name: 'beszel-agent'
       meta.stack: ${STACK}
+
+  quartz:
+    image: shommey/dockerized-quartz
+    container_name: quartz
+    restart: unless-stopped
+    networks:
+    - backbone-network
+    volumes:
+      - ./obsidian-notes:/vault
+    environment:
+      TZ: ${TZ}
+      REBUILD_WEBHOOK_SECRET: ${QUARTZ_REBUILD_WEBHOOK_SECRET}
+      NOTIFY_TARGET: gotify://gotify/${GOTIFY_NOTIFY_TARGET}
+      VAULT_DO_GIT_PULL_ON_UPDATE: true
+    ports:
+      - "80:80"
+    labels:
+      meta.name: 'quartz'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.quartz.loadbalancer.server.port: '80'
+      traefik.http.routers.quartz.rule: 'Host(`quartz.${ROOT_FQDN}`)'
+      traefik.http.routers.quartz.entrypoints: 'websecure'
+      traefik.http.routers.quartz.tls: 'true'
+      traefik.http.routers.quartz.service: 'quartz'
+    
   
   
 
