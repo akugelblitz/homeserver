@@ -72,3 +72,28 @@ $do$;
 GRANT CREATE ON DATABASE maybe TO maybe;
 GRANT CONNECT ON DATABASE maybe TO maybe; 
 GRANT ALL ON SCHEMA public TO maybe;
+
+
+
+-- paperless
+SELECT 'CREATE DATABASE paperless'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'paperless')\gexec
+
+DO
+$do$
+BEGIN
+   IF EXISTS (
+      SELECT FROM pg_catalog.pg_roles
+      WHERE  rolname = 'paperless') THEN
+
+      RAISE NOTICE 'Role "paperless" already exists. Skipping.';
+   ELSE
+      CREATE ROLE paperless LOGIN PASSWORD 'paperless';
+   END IF;
+END
+$do$;
+
+\c paperless
+GRANT CREATE ON DATABASE paperless TO paperless;
+GRANT CONNECT ON DATABASE paperless TO paperless; 
+GRANT ALL ON SCHEMA public TO paperless;

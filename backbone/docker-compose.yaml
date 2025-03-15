@@ -14,6 +14,7 @@ volumes:
   tailscale_data:
   traefik_certs:
   postgres_data:
+  redis_data:
   adguard_data:
 
 
@@ -109,6 +110,26 @@ services:
       traefik.tcp.routers.postgres.entrypoints: 'db'
       traefik.tcp.routers.postgres.tls: 'true'
       traefik.tcp.routers.postgres.tls.certresolver: 'letsencrypt'
+
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    networks:
+    - backbone-network 
+    volumes:
+      - redis_data:/data
+    environment:
+      TZ: ${TZ}
+    labels:
+      meta.name: 'redis'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.tcp.services.redis.loadbalancer.server.port: '6379'
+      traefik.tcp.routers.redis.rule: 'HostSNI(`redis.${ROOT_FQDN}`)'
+      traefik.tcp.routers.redis.entrypoints: 'redis'
+      traefik.tcp.routers.redis.tls: 'true'
+      traefik.tcp.routers.redis.tls.certresolver: 'letsencrypt'
 
   authelia:
     image: 'authelia/authelia:4.38'
