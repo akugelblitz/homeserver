@@ -9,7 +9,6 @@ volumes:
   hoarder_meilisearch:
 
 
-
 services:    
   hoarder:
     image: ghcr.io/hoarder-app/hoarder:0.22.0
