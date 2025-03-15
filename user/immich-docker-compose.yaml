@@ -9,7 +9,6 @@ volumes:
   immich_db_data:
 
 
-
 services:    
   immich-server:
     container_name: immich_server
@@ -27,7 +26,6 @@ services:
     env_file:
       - immich.env
     depends_on:
-      - redis
       - database
     healthcheck:
       disable: false
@@ -60,21 +58,6 @@ services:
     labels:
       meta.name: 'immich_ml'
       meta.stack: ${STACK}
-
-  redis:
-    container_name: immich_redis
-    image: docker.io/redis:6.2-alpine@sha256:148bb5411c184abd288d9aaed139c98123eeb8824c5d3fce03cf721db58066d8
-    restart: unless-stopped
-    ports:
-    - 6379:6379
-    networks:
-    - backbone-network
-    healthcheck:
-      test: redis-cli ping || exit 1
-    labels:
-      meta.name: 'immich_redis'
-      meta.stack: ${STACK}
-
 
   database:
     container_name: immich_postgres
