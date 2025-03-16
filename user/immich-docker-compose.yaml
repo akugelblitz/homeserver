@@ -37,6 +37,11 @@ services:
       traefik.http.routers.immich.rule: 'Host(`immich.${ROOT_FQDN}`)'
       traefik.http.routers.immich.entrypoints: 'websecure'
       traefik.http.routers.immich.tls: 'true'
+      glance.name: Immich
+      glance.icon: /assets/immich.svg
+      glance.url: https://immich.${ROOT_FQDN}
+      glance.description: Photo Management
+      glance.id: immich
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -58,6 +63,10 @@ services:
     labels:
       meta.name: 'immich_ml'
       meta.stack: ${STACK}
+      glance.name: Immich Machine Learning
+      glance.icon: /assets/tensorflow.svg
+      glance.description: AI-driven image recognition and tagging for Immich.
+      glance.parent: immich
 
   database:
     container_name: immich_postgres
@@ -94,3 +103,7 @@ services:
     labels:
       meta.name: 'immich_db'
       meta.stack: ${STACK}
+      glance.name: Immich Postgres
+      glance.icon: /assets/postgresql.svg
+      glance.description: Dedicated database backend for Immich.
+      glance.parent: immich

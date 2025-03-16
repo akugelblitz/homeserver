@@ -43,7 +43,12 @@ services:
       traefik.http.routers.hoarder.rule: 'Host(`hoarder.${ROOT_FQDN}`)'
       traefik.http.routers.hoarder.entrypoints: 'websecure'
       traefik.http.routers.hoarder.tls: 'true'   
-      # traefik.http.routers.hoarder.middlewares: 'authelia@docker'
+      glance.name: Hoarder
+      glance.icon: /assets/hoarder.png
+      glance.url: https://hoarder.${ROOT_FQDN}
+      glance.description: Bookmarks
+      glance.id: hoarder
+
 
   hoarder_chrome:
     image: gcr.io/zenika-hub/alpine-chrome:123
@@ -63,6 +68,10 @@ services:
     labels:
       meta.name: 'hoarder_chrome'
       meta.stack: ${STACK}
+      glance.name: Hoarder Chrome
+      glance.icon: /assets/googlechrome.svg
+      glance.description: Chrome for Hoarder
+      glance.parent: hoarder
 
   hoarder_meilisearch:
     image: getmeili/meilisearch:v1.11.1
@@ -79,3 +88,7 @@ services:
     labels:
       meta.name: 'hoarder_meilisearch'
       meta.stack: ${STACK}
+      glance.name: Hoarder Meilisearch
+      glance.icon: /assets/meilisearch.svg
+      glance.description: Meilisearch for Hoarder
+      glance.parent: hoarder

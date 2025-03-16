@@ -2,11 +2,9 @@ server:
   port: 8080
   assets-path: /app/assets
 theme:
-  background-color: 232 23 18
+  background-color: 186 21 20
   contrast-multiplier: 1.2
-  primary-color: 220 83 75
-  positive-color: 105 48 72
-  negative-color: 351 74 73
+  primary-color: 97 13 80
 pages:
   !include: home.yml
   !include: feeds.yml

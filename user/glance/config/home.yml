@@ -27,57 +27,57 @@
             shortcut: "!yt"
             url: https://www.youtube.com/results?search_query={QUERY}
       
-      - type: bookmarks
-        groups:
-          - links:
-              - title: Gmail
-                url: https://mail.google.com/mail/u/0/
-              - title: Amazon
-                url: https://www.amazon.com/
-              - title: Github
-                url: https://github.com/
-              - title: Wikipedia
-                url: https://en.wikipedia.org/
-          - title: Entertainment
-            color: 10 70 50
-            links:
-              - title: Netflix
-                url: https://www.netflix.com/
-              - title: Disney+
-                url: https://www.disneyplus.com/
-              - title: YouTube
-                url: https://www.youtube.com/
-              - title: Prime Video
-                url: https://www.primevideo.com/
-          - title: Social
-            color: 200 50 50
-            links:
-              - title: Reddit
-                url: https://www.reddit.com/
-              - title: Twitter
-                url: https://twitter.com/
-              - title: Instagram
-                url: https://www.instagram.com/
+      # - type: bookmarks
+      #   groups:
+      #     - links:
+      #         - title: Gmail
+      #           url: https://mail.google.com/mail/u/0/
+      #         - title: Amazon
+      #           url: https://www.amazon.com/
+      #         - title: Github
+      #           url: https://github.com/
+      #         - title: Wikipedia
+      #           url: https://en.wikipedia.org/
+      #     - title: Entertainment
+      #       color: 10 70 50
+      #       links:
+      #         - title: Netflix
+      #           url: https://www.netflix.com/
+      #         - title: Disney+
+      #           url: https://www.disneyplus.com/
+      #         - title: YouTube
+      #           url: https://www.youtube.com/
+      #         - title: Prime Video
+      #           url: https://www.primevideo.com/
+      #     - title: Social
+      #       color: 200 50 50
+      #       links:
+      #         - title: Reddit
+      #           url: https://www.reddit.com/
+      #         - title: Twitter
+      #           url: https://twitter.com/
+      #         - title: Instagram
+      #           url: https://www.instagram.com/
 
-      - type: monitor
-        cache: 1m
-        title: Services
-        sites:
-          - title: Traefik
-            url: https://traefik.kugel.homes
-            icon: /assets/traefikproxy.svg
-          - title: Authelia
-            url: https://authelia.kugel.homes
-            icon: /app/assets/authelia.logo.png
-          - title: Traefik
-            url: https://traefik.kugel.homes
-            icon: /app/assets/traefikproxy.png
-          - title: AdGuard Home
-            url: https://adguard.yourdomain.com
-            icon: /assets/adguard-logo.png
-          - title: Vaultwarden
-            url: https://vault.yourdomain.com
-            icon: /assets/vaultwarden-logo.png
+      # - type: monitor
+      #   cache: 1m
+      #   title: Services
+      #   sites:
+      #     - title: Traefik
+      #       url: https://traefik.kugel.homes
+      #       icon: /assets/traefikproxy.svg
+      #     - title: Authelia
+      #       url: https://authelia.kugel.homes
+      #       icon: /app/assets/authelia.logo.png
+      #     - title: Traefik
+      #       url: https://traefik.kugel.homes
+      #       icon: /app/assets/traefikproxy.png
+      #     - title: AdGuard Home
+      #       url: https://adguard.yourdomain.com
+      #       icon: /assets/adguard-logo.png
+      #     - title: Vaultwarden
+      #       url: https://vault.yourdomain.com
+      #       icon: /assets/vaultwarden-logo.png
 
       
       - type: docker-containers
@@ -117,21 +117,28 @@
           - timezone: Asia/Tokyo
             label: Tokyo
 
-      - type: search
-        search-engine: google
-        new-tab: true
-        bangs:
-          - title: YouTube
-            shortcut: "!yt"
-            url: https://www.youtube.com/results?search_query={QUERY}
 
 
       - type: dns-stats
-        service: pihole
-        url: https://pihole.kugel.homes/
-        token: none
+        service: adguard
+        url: http://adguard:3000
+        username: ${ADGUARD_USER}
+        password: ${ADGUARD_PASS}
 
 
+      - type: repository
+        repository: akugelblitz/obsidian-notes
+        token: ${GITHUB_TOKEN} 
+        pull-requests-limit: 5
+        issues-limit: 3
+        commits-limit: 3
+
+      - type: repository
+        repository: akugelblitz/homeserver
+        token: ${GITHUB_TOKEN}
+        pull-requests-limit: 5
+        issues-limit: 3
+        commits-limit: 3
 
       - type: releases
         cache: 1d
@@ -141,7 +148,8 @@
           - glanceapp/glance
           - go-gitea/gitea
           - immich-app/immich
-          - syncthing/syncthing
+          # - akugelblitz/obsidian-notes
+          # - akugelblitz/homeserver
 
   # Add more pages here:
   # - name: Your page name
