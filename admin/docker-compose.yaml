@@ -35,6 +35,10 @@ services:
       traefik.http.routers.gotify.rule: 'Host(`gotify.${ROOT_FQDN}`)'
       traefik.http.routers.gotify.entrypoints: 'websecure'
       traefik.http.routers.gotify.tls: 'true'
+      glance.name: Gotify
+      glance.icon: /assets/gotify.svg
+      glance.url: https://gotify.${ROOT_FQDN}
+      glance.description: Notifications
 
   portainer:
     image: portainer/portainer-ce:2.24.0-alpine
@@ -55,6 +59,10 @@ services:
       traefik.http.routers.portainer.rule: 'Host(`portainer.${ROOT_FQDN}`)'
       traefik.http.routers.portainer.entrypoints: 'websecure'
       traefik.http.routers.portainer.tls: 'true'
+      glance.name: Portainer
+      glance.icon: /assets/portainer.svg
+      glance.url: https://portainer.${ROOT_FQDN}
+      glance.description: Docker Management
 
 
   uptime-kuma:
@@ -76,6 +84,10 @@ services:
       traefik.http.routers.kuma.rule: 'Host(`kuma.${ROOT_FQDN}`)'
       traefik.http.routers.kuma.entrypoints: 'websecure'
       traefik.http.routers.kuma.tls: 'true'
+      glance.name: Uptime Kuma
+      glance.icon: /assets/uptimekuma.svg
+      glance.url: https://kuma.${ROOT_FQDN}
+      glance.description: Service Monitoring
       
 
   beszel:
@@ -106,6 +118,11 @@ services:
       traefik.http.routers.beszel.entrypoints: 'websecure'
       traefik.http.routers.beszel.tls: 'true'
       traefik.http.routers.beszel.service: 'beszel'
+      glance.name: Beszel
+      glance.icon: /assets/beszel.svg
+      glance.url: https://beszel.${ROOT_FQDN}
+      glance.description: Infra Monitoring
+      glance.id: beszel
 
 
   beszel-agent:
@@ -125,6 +142,8 @@ services:
     labels:
       meta.name: 'beszel-agent'
       meta.stack: ${STACK}
+      glance.name: Beszel Agent
+      glance.parent: beszel
 
   quartz:
     image: shommey/dockerized-quartz
@@ -150,6 +169,10 @@ services:
       traefik.http.routers.quartz.entrypoints: 'websecure'
       traefik.http.routers.quartz.tls: 'true'
       traefik.http.routers.quartz.service: 'quartz'
+      glance.name: Quartz
+      glance.icon: /assets/obsidian.svg
+      glance.url: https://quartz.${ROOT_FQDN}
+      glance.description: Notes
     
   
   

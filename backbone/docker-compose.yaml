@@ -57,6 +57,9 @@ services:
       traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
       traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
       traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
+      glance.name: Tailscale
+      glance.icon: /assets/tailscale.svg
+      glance.description: VPN
       
   traefik:
     image: traefik:v3.2.3
@@ -79,6 +82,10 @@ services:
     labels:
       meta.name: 'traefik'
       meta.stack: ${STACK}
+      glance.name: Traefik
+      glance.icon: /assets/traefikproxy.svg
+      glance.url: https://traefik.${ROOT_FQDN}
+      glance.description: Reverse Proxy
       
   postgres:
     image: postgres:16.3
@@ -110,6 +117,10 @@ services:
       traefik.tcp.routers.postgres.entrypoints: 'db'
       traefik.tcp.routers.postgres.tls: 'true'
       traefik.tcp.routers.postgres.tls.certresolver: 'letsencrypt'
+      glance.name: Postgres
+      glance.icon: /assets/postgresql.svg
+      glance.url: https://postgres.${ROOT_FQDN}
+      glance.description: Database
 
   redis:
     image: docker.io/library/redis:7-alpine
@@ -130,6 +141,10 @@ services:
       traefik.tcp.routers.redis.entrypoints: 'redis'
       traefik.tcp.routers.redis.tls: 'true'
       traefik.tcp.routers.redis.tls.certresolver: 'letsencrypt'
+      glance.name: Redis
+      glance.icon: /assets/redis.svg
+      glance.url: https://redis.${ROOT_FQDN}
+      glance.description: Cache
 
   authelia:
     image: 'authelia/authelia:4.38'
@@ -157,6 +172,10 @@ services:
       traefik.http.routers.auth.rule: 'Host(`auth.${ROOT_FQDN}`)'
       traefik.http.routers.auth.entrypoints: 'websecure'
       traefik.http.routers.auth.tls: 'true'
+      glance.name: Authelia
+      glance.icon: /assets/authelia.svg
+      glance.url: https://auth.${ROOT_FQDN}
+      glance.description: Authentication
       
   adguard:
     image: adguard/adguardhome:latest
@@ -177,3 +196,7 @@ services:
       traefik.http.routers.adguard.rule: 'Host(`dns.${ROOT_FQDN}`)'
       traefik.http.routers.adguard.entrypoints: 'websecure'
       traefik.http.routers.adguard.tls: 'true'
+      glance.name: AdGuard
+      glance.icon: /assets/adguard.svg
+      glance.url: https://dns.${ROOT_FQDN}
+      glance.description: DNS
