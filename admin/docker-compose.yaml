@@ -66,11 +66,12 @@ services:
 
 
   uptime-kuma:
-    image: louislam/uptime-kuma:1.23.16
+    image: louislam/uptime-kuma:latest
     container_name: 'kuma'
     restart: unless-stopped
     volumes:
       - uptime_kuma_data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
     - backbone-network 
     environment:
@@ -84,6 +85,7 @@ services:
       traefik.http.routers.kuma.rule: 'Host(`kuma.${ROOT_FQDN}`)'
       traefik.http.routers.kuma.entrypoints: 'websecure'
       traefik.http.routers.kuma.tls: 'true'
+      traefik.http.routers.kuma.middlewares: 'authelia@docker'
       glance.name: Uptime Kuma
       glance.icon: /assets/uptimekuma.svg
       glance.url: https://kuma.${ROOT_FQDN}
@@ -158,8 +160,6 @@ services:
       REBUILD_WEBHOOK_SECRET: ${QUARTZ_REBUILD_WEBHOOK_SECRET}
       NOTIFY_TARGET: gotify://gotify/${GOTIFY_NOTIFY_TARGET}
       VAULT_DO_GIT_PULL_ON_UPDATE: true
-    ports:
-      - "80:80"
     labels:
       meta.name: 'quartz'
       meta.stack: ${STACK}
@@ -169,6 +169,7 @@ services:
       traefik.http.routers.quartz.entrypoints: 'websecure'
       traefik.http.routers.quartz.tls: 'true'
       traefik.http.routers.quartz.service: 'quartz'
+      traefik.http.routers.quartz.middlewares: 'authelia@docker'
       glance.name: Quartz
       glance.icon: /assets/obsidian.svg
       glance.url: https://quartz.${ROOT_FQDN}
