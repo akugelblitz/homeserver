@@ -14,6 +14,8 @@ volumes:
   open_webui_data:
   maybe_data:
   paperless_data:
+  livesync_data:
+  livesync_etc:
 
 
 services:    
@@ -238,6 +240,107 @@ services:
       glance.icon: /assets/paperlessngx.svg
       glance.url: https://paperless.${ROOT_FQDN}
       glance.description: Document Management
+    
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    networks:
+    - backbone-network
+    environment:
+      TZ: ${TZ}
+      PUID: 1000
+      PGID: 1000
+      HOMEPAGE_ALLOWED_HOSTS: homepage.${ROOT_FQDN}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro    
+      - ./homepage/config:/app/config 
+      - ./homepage/icons:/app/public/icons
+    labels:
+      meta.name: 'homepage'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.homepage.loadbalancer.server.port: '3000'
+      traefik.http.routers.homepage.rule: 'Host(`homepage.${ROOT_FQDN}`)'
+      traefik.http.routers.homepage.entrypoints: 'websecure'
+      traefik.http.routers.homepage.tls: 'true'
+      glance.name: homepage
+      glance.icon: /assets/homepage.png
+      glance.url: https://homepage.${ROOT_FQDN}
+      glance.description: Dashboard
+
+  livesync:
+    image: couchdb:latest
+    container_name: livesync
+    # user: 1000:1000
+    restart: unless-stopped
+    networks:
+    - backbone-network
+    environment:
+    - COUCHDB_USER=${ADMIN_USER}
+    - COUCHDB_PASSWORD=${ADMIN_PASS}
+    volumes:
+    - livesync_data:/opt/couchdb/data
+    # - livesync_etc:/opt/couchdb/etc/local.d
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:5984"]
+    #   interval: 10s
+    #   retries: 5
+    #   start_period: 5s
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.livesync.rule: 'Host(`livesync.${ROOT_FQDN}`)'
+      traefik.http.routers.livesync.entrypoints: 'websecure'
+      traefik.http.routers.livesync.service: 'livesync'
+      traefik.http.services.livesync.loadbalancer.server.port: '5984'
+      traefik.http.routers.livesync.tls: 'true'
+      traefik.http.routers.livesync.middlewares: 'obsidiancors'
+      # The part needed for CORS to work on Traefik 2.x starts here
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolallowmethods: 'GET,PUT,POST,HEAD,DELETE'
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolallowheaders: 'accept,authorization,content-type,origin,referer'
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolalloworiginlist: 'app://obsidian.md,capacitor://localhost,http://localhost'
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolmaxage: '3600'
+      traefik.http.middlewares.obsidiancors.headers.addvaryheader: 'true'
+      traefik.http.middlewares.obsidiancors.headers.accessControlAllowCredentials: 'true'
+  
+  livesync-init:
+    image: alpine/curl:latest
+    # entrypoint: ["sleep"]
+    # command: ["infinity"]
+    entrypoint: ["/bin/sh"]
+    command: ["/app/couchdb-init.sh"]
+    container_name: livesync-init
+    # restart: unless-stopped
+    depends_on:
+    - livesync
+        # condition: service_healthy
+    networks:
+    - backbone-network
+    environment:
+    - hostname=http://livesync:5984
+    - username=${ADMIN_USER}
+    - password=${ADMIN_PASS}
+    - database=${COUCHDB_DB_NAME}
+    volumes:
+    - ./livesync:/app
+
+  livesync-helper:
+    image: denoland/deno:latest
+    command: ["deno", "run", "-A", "/app/generate_setpuri.ts", ">", "/app/setpuri.txt"]
+    container_name: livesync-helper
+    # restart: unless-stopped
+    depends_on:
+    -  livesync-init
+    networks:
+    - backbone-network
+    environment:
+    - hostname=https://livesync.${ROOT_FQDN}
+    - username=${ADMIN_USER}
+    - password=${ADMIN_PASS}
+    - database=${COUCHDB_DB_NAME}
+    volumes:
+    - ./livesync:/app
 
 
 
+    

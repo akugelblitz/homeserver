@@ -11,7 +11,7 @@ volumes:
 
 services:    
   hoarder:
-    image: ghcr.io/hoarder-app/hoarder:0.22.0
+    image: ghcr.io/karakeep-app/karakeep:${HOARDER_VERSION:-release}
     container_name: 'hoarder'
     restart: unless-stopped
     networks:
@@ -28,7 +28,7 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       NEXTAUTH_URL: hoarder.${ROOT_FQDN}
-      NEXTAUTH_URL_INTERNAL: http://localhost:3000
+      # NEXTAUTH_URL_INTERNAL: http://localhost:3000
       DISABLE_PASSWORD_AUTH: true
       OAUTH_WELLKNOWN_URL: https://auth.${ROOT_FQDN}/.well-known/openid-configuration
       OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
