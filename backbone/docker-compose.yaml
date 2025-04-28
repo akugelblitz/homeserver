@@ -19,47 +19,47 @@ volumes:
 
 
 services:
-  tailscale:
-    image: tailscale/tailscale:v1.76.6
-    container_name: tailscale
-    hostname: traefik
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    # ports:
-      # - "80:80"
-      # - "443:443"
-      # - "8080:8080"
-    environment:
-      TS_AUTHKEY: ${TS_AUTHKEY}
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: false
-      TZ: ${TZ}
-    volumes:
-      - tailscale_data:/var/lib/tailscale
-      - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - net_admin
-      - sys_module
-    labels:
-      meta.name: 'tailscale'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) '
-      traefik.http.routers.traefik.entrypoints: 'websecure'
-      traefik.http.routers.traefik.service: 'api@internal'
-      traefik.http.services.traefik.loadbalancer.server.port: '8080'
-      traefik.http.routers.traefik.tls: 'true'
-      traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
-      traefik.http.routers.traefik.tls.domains[0].main: '$ROOT_FQDN'
-      traefik.http.routers.traefik.tls.domains[0].sans: '*.$ROOT_FQDN'
-      traefik.http.routers.traefik.middlewares: 'authelia@docker'
-      traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
-      glance.name: Tailscale
-      glance.icon: /assets/tailscale.svg
-      glance.description: VPN
+  # tailscale:
+  #   image: tailscale/tailscale:v1.76.6
+  #   container_name: tailscale
+  #   hostname: traefik
+  #   restart: unless-stopped
+  #   networks:
+  #   - backbone-network
+  #   # ports:
+  #     # - "80:80"
+  #     # - "443:443"
+  #     # - "8080:8080"
+  #   environment:
+  #     TS_AUTHKEY: ${TS_AUTHKEY}
+  #     TS_STATE_DIR: /var/lib/tailscale
+  #     TS_USERSPACE: false
+  #     TZ: ${TZ}
+  #   volumes:
+  #     - tailscale_data:/var/lib/tailscale
+  #     - /dev/net/tun:/dev/net/tun
+  #   cap_add:
+  #     - net_admin
+  #     - sys_module
+  #   labels:
+  #     meta.name: 'tailscale'
+  #     meta.stack: ${STACK}
+  #     traefik.enable: 'true'
+  #     traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) '
+  #     traefik.http.routers.traefik.entrypoints: 'websecure'
+  #     traefik.http.routers.traefik.service: 'api@internal'
+  #     traefik.http.services.traefik.loadbalancer.server.port: '8080'
+  #     traefik.http.routers.traefik.tls: 'true'
+  #     traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
+  #     traefik.http.routers.traefik.tls.domains[0].main: '$ROOT_FQDN'
+  #     traefik.http.routers.traefik.tls.domains[0].sans: '*.$ROOT_FQDN'
+  #     traefik.http.routers.traefik.middlewares: 'authelia@docker'
+  #     traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
+  #     traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
+  #     traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
+  #     glance.name: Tailscale
+  #     glance.icon: /assets/tailscale.svg
+  #     glance.description: VPN
       
   traefik:
     image: traefik:v3.2.3
@@ -67,10 +67,11 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    depends_on:
-      - tailscale
-    network_mode: service:tailscale
-
+    networks:
+    - backbone-network
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik.yaml:/etc/traefik/traefik.yaml
@@ -86,6 +87,19 @@ services:
       glance.icon: /assets/traefikproxy.svg
       glance.url: https://traefik.${ROOT_FQDN}
       glance.description: Reverse Proxy
+      traefik.enable: 'true'
+      traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) '
+      traefik.http.routers.traefik.entrypoints: 'websecure'
+      traefik.http.routers.traefik.service: 'api@internal'
+      traefik.http.services.traefik.loadbalancer.server.port: '8080'
+      traefik.http.routers.traefik.tls: 'true'
+      traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
+      traefik.http.routers.traefik.tls.domains[0].main: '$ROOT_FQDN'
+      traefik.http.routers.traefik.tls.domains[0].sans: '*.$ROOT_FQDN'
+      traefik.http.routers.traefik.middlewares: 'authelia@docker'
+      traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
+      traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
+      traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
       
   postgres:
     image: postgres:16.3
