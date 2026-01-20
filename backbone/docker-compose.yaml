@@ -42,17 +42,17 @@ services:
       meta.stack: ${STACK}
       traefik.enable: 'true'
       traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) '
-      traefik.http.routers.traefik.entrypoints: 'web'
+      traefik.http.routers.traefik.entrypoints: 'websecure'
       traefik.http.routers.traefik.service: 'api@internal'
       traefik.http.services.traefik.loadbalancer.server.port: '8080'
       traefik.http.routers.traefik.tls: 'true'
       traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
       traefik.http.routers.traefik.tls.domains[0].main: '$ROOT_FQDN'
       traefik.http.routers.traefik.tls.domains[0].sans: '*.$ROOT_FQDN'
-      traefik.http.routers.traefik.middlewares: 'authelia@docker'
-      traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
+      # traefik.http.routers.traefik.middlewares: 'authelia@docker'
+      # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
+      # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
+      # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
       glance.name: Tailscale
       glance.icon: /assets/tailscale.svg
       glance.description: VPN
@@ -188,26 +188,26 @@ services:
       glance.url: https://auth.${ROOT_FQDN}
       glance.description: Authentication
       
-  # adguard:
-  #   image: adguard/adguardhome:latest
-  #   container_name: adguard
-  #   restart: unless-stopped
-  #   ports:
-  #   - "53:53/tcp"
-  #   - "53:53/udp"
-  #   networks:
-  #   - backbone-network
-  #   volumes:
-  #   - adguard_data:/opt/adguardhome
-  #   labels:
-  #     meta.name: 'adguard'
-  #     meta.stack: ${STACK}
-  #     traefik.enable: 'true'
-  #     traefik.http.services.adguard.loadbalancer.server.port: '3000'
-  #     traefik.http.routers.adguard.rule: 'Host(`dns.${ROOT_FQDN}`)'
-  #     traefik.http.routers.adguard.entrypoints: 'websecure'
-  #     traefik.http.routers.adguard.tls: 'true'
-  #     glance.name: AdGuard
-  #     glance.icon: /assets/adguard.svg
-  #     glance.url: https://dns.${ROOT_FQDN}
-  #     glance.description: DNS
+  adguard:
+    image: adguard/adguardhome:v0.107.71
+    container_name: adguard
+    restart: unless-stopped
+    ports:
+    - "53:53/tcp"
+    - "53:53/udp"
+    networks:
+    - backbone-network
+    volumes:
+    - adguard_data:/opt/adguardhome
+    labels:
+      meta.name: 'adguard'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.adguard.loadbalancer.server.port: '3000'
+      traefik.http.routers.adguard.rule: 'Host(`dns.${ROOT_FQDN}`)'
+      traefik.http.routers.adguard.entrypoints: 'websecure'
+      traefik.http.routers.adguard.tls: 'true'
+      glance.name: AdGuard
+      glance.icon: /assets/adguard.svg
+      glance.url: https://dns.${ROOT_FQDN}
+      glance.description: DNS
