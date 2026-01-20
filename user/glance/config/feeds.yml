@@ -27,13 +27,13 @@
         title: Services
         sites:
           - title: Traefik
-            url: https://traefik.kugel.homes
+            url: https://traefik.kugelblitz.cc
             icon: /assets/traefikproxy.svg
           - title: Authelia
-            url: https://authelia.kugel.homes
+            url: https://authelia.kugelblitz.cc
             icon: /app/assets/authelia.logo.png
           - title: Traefik
-            url: https://traefik.kugel.homes
+            url: https://traefik.kugelblitz.cc
             icon: /app/assets/traefikproxy.png
           - title: AdGuard Home
             url: https://adguard.yourdomain.com

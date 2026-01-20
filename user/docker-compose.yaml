@@ -1,5 +1,5 @@
 include:
-  - immich-docker-compose.yaml
+  # - immich-docker-compose.yaml
   - hoarder-docker-compose.yaml
 
 networks:
@@ -18,62 +18,23 @@ volumes:
   livesync_etc:
 
 
-services:    
-  maybe:
-    image: ghcr.io/maybe-finance/maybe:latest
-    container_name: 'maybe'
-    restart: unless-stopped
-    volumes:
-      - maybe_data:/rails/storage
-    networks:
-    - backbone-network 
-    environment:
-      TZ: ${TZ}
-      SELF_HOSTED: "true"
-      RAILS_FORCE_SSL: "false"
-      RAILS_ASSUME_SSL: "false"
-      GOOD_JOB_EXECUTION_MODE: async
-      SECRET_KEY_BASE: ${MAYBE_SECRET_KEY_BASE:?}
-      DB_HOST: postgres
-      POSTGRES_DB: maybe
-      POSTGRES_USER: maybe
-      POSTGRES_PASSWORD: maybe
-      SMTP_ADDRESS: ${MAIL_HOST}
-      SMTP_PORT: ${MAIL_PORT}
-      SMTP_USERNAME: ${MAIL_USERNAME}
-      SMTP_PASSWORD: ${MAIL_PASSWORD}
-      SMTP_TLS_ENABLED: true
-    labels:
-      meta.name: 'maybe'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.maybe.loadbalancer.server.port: '3000'
-      traefik.http.routers.maybe.rule: 'Host(`maybe.${ROOT_FQDN}`)'
-      traefik.http.routers.maybe.entrypoints: 'websecure'
-      traefik.http.routers.maybe.tls: 'true'
-      glance.name: Maybe
-      glance.icon: /assets/maybe.svg
-      glance.url: https://maybe.${ROOT_FQDN}
-      glance.description: Finance Management
-
-
-  
-  whoami:
-    image: 'traefik/whoami'
-    container_name: 'whoami'
-    restart: 'unless-stopped'
-    networks:
-    - backbone-network    
-    labels:
-      meta.name: 'whoami'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.whoami.loadbalancer.server.port: '80'
-      traefik.http.routers.whoami.rule: 'Host(`whoami.${ROOT_FQDN}`)'
-      traefik.http.routers.whoami.entrypoints: 'websecure'
-      traefik.http.routers.whoami.tls: 'true'
-      glance.name: Whoami
-      glance.hide: true
+services:      
+  # whoami:
+  #   image: 'traefik/whoami'
+  #   container_name: 'whoami'
+  #   restart: 'unless-stopped'
+  #   networks:
+  #   - backbone-network    
+  #   labels:
+  #     meta.name: 'whoami'
+  #     meta.stack: ${STACK}
+  #     traefik.enable: 'true'
+  #     traefik.http.services.whoami.loadbalancer.server.port: '80'
+  #     traefik.http.routers.whoami.rule: 'Host(`whoami.${ROOT_FQDN}`)'
+  #     traefik.http.routers.whoami.entrypoints: 'websecure'
+  #     traefik.http.routers.whoami.tls: 'true'
+  #     glance.name: Whoami
+  #     glance.hide: true
 
   # jellyfin:
   #   image: jellyfin/jellyfin:10.10.3
@@ -123,151 +84,151 @@ services:
   #     - "traefik.http.routers.jellyseerr.entrypoints=websecure"
   #     - "traefik.http.routers.jellyseerr.tls=true"
      
-  open_webui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: 'open_webui'
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    volumes:
-      - "open_webui_data:/app/backend/data"
-    environment:
-      TZ: ${TZ}
-      WEBUI_URL: chat.${ROOT_FQDN}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
-      ENABLE_OAUTH_SIGNUP: 'true'
-      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: 'true'
-      OAUTH_CLIENT_ID: ${OPEN_WEBUI_OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET: ${OPEN_WEBUI_OAUTH_CLIENT_SECRET}
-      OPENID_PROVIDER_URL: 'https://auth.kugel.homes/.well-known/openid-configuration'
-      OAUTH_PROVIDER_NAME: 'Authelia'
-      OAUTH_SCOPES: 'openid email profile groups'
-      DEFAULT_USER_ROLE: user
-      # ENABLE_OAUTH_ROLE_MANAGEMENT: 'true'
-      # OAUTH_ALLOWED_ROLES: 'openwebui,openwebui-admin'
-      # OAUTH_ADMIN_ROLES: 'openwebui-admin'
-      # OAUTH_ROLES_CLAIM: 'groups'
-    labels:
-      meta.name: 'chat'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.chat.loadbalancer.server.port: '8080'
-      traefik.http.routers.chat.rule: 'Host(`chat.${ROOT_FQDN}`)'
-      traefik.http.routers.chat.entrypoints: 'websecure'
-      traefik.http.routers.chat.tls: 'true'
-      glance.name: Open Webui
-      glance.icon: /assets/openwebui.svg
-      glance.url: https://chat.${ROOT_FQDN}
-      glance.description: LLM Chat
+  # open_webui:
+  #   image: ghcr.io/open-webui/open-webui:main
+  #   container_name: 'open_webui'
+  #   restart: unless-stopped
+  #   networks:
+  #   - backbone-network
+  #   volumes:
+  #   - "open_webui_data:/app/backend/data"
+  #   environment:
+  #     TZ: ${TZ}
+  #     WEBUI_URL: chat.${ROOT_FQDN}
+  #     ADMIN_EMAIL: ${ADMIN_EMAIL}
+  #     OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+  #     ENABLE_OAUTH_SIGNUP: 'true'
+  #     OAUTH_MERGE_ACCOUNTS_BY_EMAIL: 'true'
+  #     OAUTH_CLIENT_ID: ${OPEN_WEBUI_OAUTH_CLIENT_ID}
+  #     OAUTH_CLIENT_SECRET: ${OPEN_WEBUI_OAUTH_CLIENT_SECRET}
+  #     OPENID_PROVIDER_URL: 'https://auth.kugelblitz.cc/.well-known/openid-configuration'
+  #     OAUTH_PROVIDER_NAME: 'Authelia'
+  #     OAUTH_SCOPES: 'openid email profile groups'
+  #     DEFAULT_USER_ROLE: user
+  #     # ENABLE_OAUTH_ROLE_MANAGEMENT: 'true'
+  #     # OAUTH_ALLOWED_ROLES: 'openwebui,openwebui-admin'
+  #     # OAUTH_ADMIN_ROLES: 'openwebui-admin'
+  #     # OAUTH_ROLES_CLAIM: 'groups'
+  #   labels:
+  #     meta.name: 'chat'
+  #     meta.stack: ${STACK}
+  #     traefik.enable: 'true'
+  #     traefik.http.services.chat.loadbalancer.server.port: '8080'
+  #     traefik.http.routers.chat.rule: 'Host(`chat.${ROOT_FQDN}`)'
+  #     traefik.http.routers.chat.entrypoints: 'websecure'
+  #     traefik.http.routers.chat.tls: 'true'
+  #     glance.name: Open Webui
+  #     glance.icon: /assets/openwebui.svg
+  #     glance.url: https://chat.${ROOT_FQDN}
+  #     glance.description: LLM Chat
 
   
-  glance:
-    image: glanceapp/glance
-    container_name: glance
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    environment:
-      TZ: ${TZ}
-      GITHUB_TOKEN: ${GITHUB_TOKEN}
-      ADGUARD_USER: ${ADMIN_USER}
-      ADGUARD_PASS: ${ADMIN_PASS}
-    volumes:
-      - ./glance/config:/app/config
-      - ./glance/assets:/app/assets
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    labels:
-      meta.name: 'glance'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.glance.loadbalancer.server.port: '8080'
-      traefik.http.routers.glance.rule: 'Host(`glance.${ROOT_FQDN}`)'
-      traefik.http.routers.glance.entrypoints: 'websecure'
-      traefik.http.routers.glance.tls: 'true'
-      glance.name: Glance
-      glance.icon: /assets/glance.png
-      glance.url: https://glance.${ROOT_FQDN}
-      glance.description: Dashboard
+  # glance:
+  #   image: glanceapp/glance
+  #   container_name: glance
+  #   restart: unless-stopped
+  #   networks:
+  #   - backbone-network
+  #   environment:
+  #     TZ: ${TZ}
+  #     GITHUB_TOKEN: ${GITHUB_TOKEN}
+  #     ADGUARD_USER: ${ADMIN_USER}
+  #     ADGUARD_PASS: ${ADMIN_PASS}
+  #   volumes:
+  #   - ./glance/config:/app/config
+  #   - ./glance/assets:/app/assets
+  #   - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   labels:
+  #     meta.name: 'glance'
+  #     meta.stack: ${STACK}
+  #     traefik.enable: 'true'
+  #     traefik.http.services.glance.loadbalancer.server.port: '8080'
+  #     traefik.http.routers.glance.rule: 'Host(`glance.${ROOT_FQDN}`)'
+  #     traefik.http.routers.glance.entrypoints: 'websecure'
+  #     traefik.http.routers.glance.tls: 'true'
+  #     glance.name: Glance
+  #     glance.icon: /assets/glance.png
+  #     glance.url: https://glance.${ROOT_FQDN}
+  #     glance.description: Dashboard
 
-  paperless-ngx:
-    image: ghcr.io/paperless-ngx/paperless-ngx:latest
-    container_name: paperless
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    expose:
-      - 8000
-    volumes:
-      - paperless_data:/usr/src/paperless/data
-      - ${PAPERLESS_BASE_PATH}/media:/usr/src/paperless/media
-      - ${PAPERLESS_BASE_PATH}/export:/usr/src/paperless/export
-      - ${PAPERLESS_BASE_PATH}/consume:/usr/src/paperless/consume
-    environment:
-      PAPERLESS_REDIS: redis://redis:6379/1
-      PAPERLESS_DBHOST: postgres
-      PAPERLESS_DBNAME: paperless
-      PAPERLESS_DBUSER: paperless
-      PAPERLESS_DBPASS: paperless
-      USERMAP_UID: 1000
-      USERMAP_GID: 1000
-      PAPERLESS_ADMIN_USER: ${ADMIN_USER}
-      PAPERLESS_ADMIN_MAIL: ${ADMIN_EMAIL}
-      PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASS}
-      PAPERLESS_SECRET_KEY: 6eKz1nYhNmpf8w3HoMeCdnIoUqCF8Q1aif3BGks74pU # adjust this key if you plan to make paperless available publicly
-      PAPERLESS_URL: https://paperless.${ROOT_FQDN} # adjust; also sets ALLOWED_HOSTS, CORS_ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS
-      PAPERLESS_ALLOWED_HOSTS: localhost,paperless.${ROOT_FQDN},127.0.0.1:8000 # comma separated list; add your domain name
-      PAPERLESS_TIME_ZONE: ${TZ}
-      PAPERLESS_OCR_LANGUAGE: eng 
-      PAPERLESS_ENABLE_HTTP_REMOTE_USER: true
-      PAPERLESS_HTTP_REMOTE_USER_HEADER_NAME: HTTP_REMOTE_USER
-      PAPERLESS_LOGOUT_REDIRECT_URL: https://auth.kugel.homes/logout
+  # paperless-ngx:
+  #   image: ghcr.io/paperless-ngx/paperless-ngx:latest
+  #   container_name: paperless
+  #   restart: unless-stopped
+  #   networks:
+  #   - backbone-network
+  #   expose:
+  #   - 8000
+  #   volumes:
+  #   - paperless_data:/usr/src/paperless/data
+  #   - ${PAPERLESS_BASE_PATH}/media:/usr/src/paperless/media
+  #   - ${PAPERLESS_BASE_PATH}/export:/usr/src/paperless/export
+  #   - ${PAPERLESS_BASE_PATH}/consume:/usr/src/paperless/consume
+  #   environment:
+  #     PAPERLESS_REDIS: redis://redis:6379/1
+  #     PAPERLESS_DBHOST: postgres
+  #     PAPERLESS_DBNAME: paperless
+  #     PAPERLESS_DBUSER: paperless
+  #     PAPERLESS_DBPASS: paperless
+  #     USERMAP_UID: 1000
+  #     USERMAP_GID: 1000
+  #     PAPERLESS_ADMIN_USER: ${ADMIN_USER}
+  #     PAPERLESS_ADMIN_MAIL: ${ADMIN_EMAIL}
+  #     PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASS}
+  #     PAPERLESS_SECRET_KEY: 6eKz1nYhNmpf8w3HoMeCdnIoUqCF8Q1aif3BGks74pU # adjust this key if you plan to make paperless available publicly
+  #     PAPERLESS_URL: https://paperless.${ROOT_FQDN} # adjust; also sets ALLOWED_HOSTS, CORS_ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS
+  #     PAPERLESS_ALLOWED_HOSTS: localhost,paperless.${ROOT_FQDN},127.0.0.1:8000 # comma separated list; add your domain name
+  #     PAPERLESS_TIME_ZONE: ${TZ}
+  #     PAPERLESS_OCR_LANGUAGE: eng 
+  #     PAPERLESS_ENABLE_HTTP_REMOTE_USER: true
+  #     PAPERLESS_HTTP_REMOTE_USER_HEADER_NAME: HTTP_REMOTE_USER
+  #     PAPERLESS_LOGOUT_REDIRECT_URL: https://auth.kugelblitz.cc/logout
 
-    healthcheck:
-      test: ["CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    labels:
-      meta.name: 'paperless'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.paperless.loadbalancer.server.port: '8000'
-      traefik.http.routers.paperless.rule: 'Host(`paperless.${ROOT_FQDN}`)'
-      traefik.http.routers.paperless.entrypoints: 'websecure'
-      traefik.http.routers.paperless.tls: 'true'
-      glance.name: Paperless
-      glance.icon: /assets/paperlessngx.svg
-      glance.url: https://paperless.${ROOT_FQDN}
-      glance.description: Document Management
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #   labels:
+  #     meta.name: 'paperless'
+  #     meta.stack: ${STACK}
+  #     traefik.enable: 'true'
+  #     traefik.http.services.paperless.loadbalancer.server.port: '8000'
+  #     traefik.http.routers.paperless.rule: 'Host(`paperless.${ROOT_FQDN}`)'
+  #     traefik.http.routers.paperless.entrypoints: 'websecure'
+  #     traefik.http.routers.paperless.tls: 'true'
+  #     glance.name: Paperless
+  #     glance.icon: /assets/paperlessngx.svg
+  #     glance.url: https://paperless.${ROOT_FQDN}
+  #     glance.description: Document Management
     
-  homepage:
-    image: ghcr.io/gethomepage/homepage:latest
-    container_name: homepage
-    restart: unless-stopped
-    networks:
-    - backbone-network
-    environment:
-      TZ: ${TZ}
-      PUID: 1000
-      PGID: 1000
-      HOMEPAGE_ALLOWED_HOSTS: homepage.${ROOT_FQDN}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro    
-      - ./homepage/config:/app/config 
-      - ./homepage/icons:/app/public/icons
-    labels:
-      meta.name: 'homepage'
-      meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.homepage.loadbalancer.server.port: '3000'
-      traefik.http.routers.homepage.rule: 'Host(`homepage.${ROOT_FQDN}`)'
-      traefik.http.routers.homepage.entrypoints: 'websecure'
-      traefik.http.routers.homepage.tls: 'true'
-      glance.name: homepage
-      glance.icon: /assets/homepage.png
-      glance.url: https://homepage.${ROOT_FQDN}
-      glance.description: Dashboard
+  # homepage:
+  #   image: ghcr.io/gethomepage/homepage:latest
+  #   container_name: homepage
+  #   restart: unless-stopped
+  #   networks:
+  #   - backbone-network
+  #   environment:
+  #     TZ: ${TZ}
+  #     PUID: 1000
+  #     PGID: 1000
+  #     HOMEPAGE_ALLOWED_HOSTS: homepage.${ROOT_FQDN}
+  #   volumes:
+  #   - /var/run/docker.sock:/var/run/docker.sock:ro    
+  #   - ./homepage/config:/app/config 
+  #   - ./homepage/icons:/app/public/icons
+  #   labels:
+  #     meta.name: 'homepage'
+  #     meta.stack: ${STACK}
+  #     traefik.enable: 'true'
+  #     traefik.http.services.homepage.loadbalancer.server.port: '3000'
+  #     traefik.http.routers.homepage.rule: 'Host(`homepage.${ROOT_FQDN}`)'
+  #     traefik.http.routers.homepage.entrypoints: 'websecure'
+  #     traefik.http.routers.homepage.tls: 'true'
+  #     glance.name: homepage
+  #     glance.icon: /assets/homepage.png
+  #     glance.url: https://homepage.${ROOT_FQDN}
+  #     glance.description: Dashboard
 
   livesync:
     image: couchdb:latest
@@ -282,11 +243,11 @@ services:
     volumes:
     - livesync_data:/opt/couchdb/data
     # - livesync_etc:/opt/couchdb/etc/local.d
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:5984"]
-    #   interval: 10s
-    #   retries: 5
-    #   start_period: 5s
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up", "--user", "${ADMIN_USER}:${ADMIN_PASS}"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
     labels:
       traefik.enable: 'true'
       traefik.http.routers.livesync.rule: 'Host(`livesync.${ROOT_FQDN}`)'
