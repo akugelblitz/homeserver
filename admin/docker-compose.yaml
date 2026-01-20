@@ -27,6 +27,11 @@ services:
       GOTIFY_DEFAULTUSER_NAME: ${ADMIN_USER}
       GOTIFY_DEFAULTUSER_PASS: ${ADMIN_PASS}
       TZ: ${TZ}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
     labels:
       meta.name: 'gotify'
       meta.stack: ${STACK}
@@ -47,8 +52,8 @@ services:
     networks:
     - backbone-network
     volumes:
-      - portainer_data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
+    - portainer_data:/data
+    - /var/run/docker.sock:/var/run/docker.sock
     environment:
       TZ: ${TZ}
     labels:
@@ -103,7 +108,7 @@ services:
     networks:
     - backbone-network
     volumes:
-      - beszel_data:/beszel_data
+    - beszel_data:/beszel_data
     # extra_hosts:
     #   - 'host.docker.internal:host-gateway'
       # - 'gotify.${ROOT_FQDN}:${TRAEFIK_IP}'
@@ -135,7 +140,7 @@ services:
     networks:
     - backbone-network
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+    - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       PORT: 45876 
       KEY: ${BESZEL_PUBLIC_KEY}
@@ -154,7 +159,7 @@ services:
     networks:
     - backbone-network
     volumes:
-      - ./obsidian-notes:/vault
+    - ./obsidian-notes:/vault
     environment:
       TZ: ${TZ}
       REBUILD_WEBHOOK_SECRET: ${QUARTZ_REBUILD_WEBHOOK_SECRET}
