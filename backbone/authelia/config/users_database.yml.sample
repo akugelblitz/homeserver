@@ -11,7 +11,7 @@ users:
     disabled: false
     displayname: "Aditya"
     password: "..."  
-    email: aditya@kugel.homes
+    email: aditya@kugelblitz.cc
     groups:
       - admin
       - dev

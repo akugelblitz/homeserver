@@ -1,7 +1,7 @@
 # traefik.yaml
 
 api:
-  insecure: false
+  insecure: true
   debug: true
   dashboard: true
 
@@ -23,11 +23,7 @@ entryPoints:
       trustedIPs:
           - "127.0.0.1/32"
           - "192.168.1.7"
-    http:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
+
 
   websecure:
     address: ":443"
@@ -56,10 +52,10 @@ accessLog:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: homeserver@kugel.homes
+      email: homeserver@kugelblitz.cc
       storage: /certs/acme.json
-      caServer: https://acme-v02.api.letsencrypt.org/directory # production (default)
-      # caServer: https://acme-staging-v02.api.letsencrypt.org/directory # staging
+      # caServer: https://acme-v02.api.letsencrypt.org/directory # production (default)
+      caServer: https://acme-staging-v02.api.letsencrypt.org/directory # staging
       dnsChallenge:
         provider: cloudflare
         delayBeforeCheck: 10 #Optional to wait x second before checking with the DNS Server
