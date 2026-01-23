@@ -60,7 +60,7 @@ providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    network: backbone-network
+    network: ${NETWORK}
     watch: true
 
   file:
@@ -78,7 +78,7 @@ entryPoints:
         - "10.0.0.0/8"
         - "172.16.0.0/12"
         - "192.168.0.0/16"
-        - "100.64.0.0/10"  # Tailscale
+        - "${TAILSCALE_CIDR}"  # Tailscale
     http:
       redirections:
         entryPoint:
@@ -95,7 +95,7 @@ entryPoints:
         - "10.0.0.0/8"
         - "172.16.0.0/12"
         - "192.168.0.0/16"
-        - "100.64.0.0/10"  # Tailscale
+        - "${TAILSCALE_CIDR}"  # Tailscale
     http:
       tls:
         certResolver: letsencrypt
