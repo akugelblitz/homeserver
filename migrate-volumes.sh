@@ -44,13 +44,13 @@ echo ""
 echo "Step 2: Migrating data..."
 for old_volume in "${!VOLUME_MAP[@]}"; do
     new_volume="${VOLUME_MAP[$old_volume]}"
-    
+
     # Check if old volume exists
     if ! docker volume inspect "$old_volume" &>/dev/null; then
         echo "  ⚠ Skipping $old_volume (doesn't exist)"
         continue
     fi
-    
+
     echo "  → Migrating $old_volume to $new_volume..."
     docker run --rm \
         -v "$old_volume:/source:ro" \

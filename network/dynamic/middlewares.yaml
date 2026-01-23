@@ -1,0 +1,104 @@
+# Traefik Dynamic Configuration
+# Middlewares for security, rate limiting, and other cross-cutting concerns
+
+http:
+  middlewares:
+    # Security Headers
+    security-headers:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+        customResponseHeaders:
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
+          server: "" # Hide server header
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+
+    # Rate Limiting
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 200
+        period: 1s
+
+    # Aggressive Rate Limiting (for sensitive endpoints)
+    rate-limit-strict:
+      rateLimit:
+        average: 10
+        burst: 20
+        period: 1s
+
+    # Compression
+    compression:
+      compress: {}
+
+    # IP Allowlist (for admin interfaces)
+    admin-whitelist:
+      ipAllowList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"
+          - "100.64.0.0/10" # Tailscale
+
+    # Authelia Forward Auth
+    authelia:
+      forwardAuth:
+        address: "http://authelia:9091/api/authz/forward-auth"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - "Remote-User"
+          - "Remote-Groups"
+          - "Remote-Email"
+          - "Remote-Name"
+
+    # Chain: Security + Compression
+    secure-chain:
+      chain:
+        middlewares:
+          - security-headers
+          - compression
+
+    # Chain: Security + Compression + Rate Limit
+    secure-rate-chain:
+      chain:
+        middlewares:
+          - security-headers
+          - compression
+          - rate-limit
+
+    # Chain: Security + Authelia
+    secure-auth-chain:
+      chain:
+        middlewares:
+          - security-headers
+          - compression
+          - authelia
+
+# TLS Options
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+        - TLS_AES_128_GCM_SHA256
+        - TLS_AES_256_GCM_SHA384
+        - TLS_CHACHA20_POLY1305_SHA256
+      curvePreferences:
+        - CurveP521
+        - CurveP384
+      sniStrict: true
+
+    modern:
+      minVersion: VersionTLS13
+      sniStrict: true

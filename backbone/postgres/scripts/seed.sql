@@ -1,7 +1,7 @@
--- SCRIPT: 
+-- SCRIPT:
 -- cat /app/seed.sql | PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f-
 
--- authelia 
+-- authelia
 SELECT 'CREATE DATABASE authelia'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'authelia')\gexec
 
@@ -21,7 +21,7 @@ $do$;
 
 \c authelia
 
-GRANT CONNECT ON DATABASE authelia TO authelia; 
+GRANT CONNECT ON DATABASE authelia TO authelia;
 GRANT ALL ON SCHEMA public TO authelia;
 
 
@@ -45,7 +45,7 @@ $do$;
 
 \c gotify
 
-GRANT CONNECT ON DATABASE gotify TO gotify; 
+GRANT CONNECT ON DATABASE gotify TO gotify;
 GRANT ALL ON SCHEMA public TO gotify;
 
 
@@ -70,7 +70,7 @@ $do$;
 
 \c maybe
 GRANT CREATE ON DATABASE maybe TO maybe;
-GRANT CONNECT ON DATABASE maybe TO maybe; 
+GRANT CONNECT ON DATABASE maybe TO maybe;
 GRANT ALL ON SCHEMA public TO maybe;
 
 
@@ -95,5 +95,5 @@ $do$;
 
 \c paperless
 GRANT CREATE ON DATABASE paperless TO paperless;
-GRANT CONNECT ON DATABASE paperless TO paperless; 
+GRANT CONNECT ON DATABASE paperless TO paperless;
 GRANT ALL ON SCHEMA public TO paperless;

@@ -23,7 +23,7 @@ jobs:
       docs: ${{ steps.filter.outputs.docs }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -66,7 +66,7 @@ jobs:
           - wiki
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Validate ${{ matrix.stack }} compose file
         run: |
           cd ${{ matrix.stack }}
@@ -85,15 +85,15 @@ jobs:
     if: needs.changes.outputs.yaml == 'true'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      
+          python-version: "3.11"
+
       - name: Install yamllint
         run: pip install yamllint
-      
+
       - name: Run yamllint
         run: yamllint -c .yamllint.yml .
 
@@ -104,7 +104,7 @@ jobs:
     if: needs.changes.outputs.shell == 'true'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
@@ -120,7 +120,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -132,21 +132,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'config'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-      
+          scan-type: "config"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: "trivy-results.sarif"
 
   env-validation:
     name: Environment File Validation
@@ -155,7 +155,7 @@ jobs:
     if: needs.changes.outputs.env == 'true'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Validate environment files
         run: |
           chmod +x .github/scripts/validate-env.sh
@@ -168,11 +168,11 @@ jobs:
     if: needs.changes.outputs.docs == 'true'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Lint Markdown files
         uses: DavidAnson/markdownlint-cli2-action@v18
         with:
-          globs: '**/*.md'
+          globs: "**/*.md"
 
   pr-summary:
     name: PR Summary
@@ -200,22 +200,22 @@ jobs:
               'Environment Validation': '${{ needs.env-validation.result }}',
               'Markdown Linting': '${{ needs.markdown-lint.result }}'
             };
-            
+
             let summary = '## 🔍 PR Validation Results\n\n';
             let allPassed = true;
-            
+
             for (const [check, result] of Object.entries(results)) {
-              const icon = result === 'success' ? '✅' : 
+              const icon = result === 'success' ? '✅' :
                           result === 'skipped' ? '⏭️' : '❌';
               summary += `${icon} **${check}**: ${result}\n`;
               if (result === 'failure') allPassed = false;
             }
-            
+
             summary += '\n---\n';
-            summary += allPassed ? 
+            summary += allPassed ?
               '✨ All checks passed! This PR is ready for review.' :
               '⚠️ Some checks failed. Please review and fix the issues above.';
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

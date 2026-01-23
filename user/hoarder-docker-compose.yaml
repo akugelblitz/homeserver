@@ -2,20 +2,18 @@ networks:
   backbone-network:
     name: ${BACKBONE_STACK}
     external: true
-          
 
 volumes:
   hoarder_data:
   hoarder_meilisearch:
 
-
-services:    
+services:
   hoarder:
     image: ghcr.io/karakeep-app/karakeep:${HOARDER_VERSION:-release}
-    container_name: 'hoarder'
+    container_name: "hoarder"
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     volumes:
       - hoarder_data:/data
     environment:
@@ -36,26 +34,25 @@ services:
       OAUTH_PROVIDER_NAME: authelia
       TZ: ${TZ}
     labels:
-      meta.name: 'hoarder'
+      meta.name: "hoarder"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.hoarder.loadbalancer.server.port: '3000'
-      traefik.http.routers.hoarder.rule: 'Host(`hoarder.${ROOT_FQDN}`)'
-      traefik.http.routers.hoarder.entrypoints: 'websecure'
-      traefik.http.routers.hoarder.tls: 'true'   
+      traefik.enable: "true"
+      traefik.http.services.hoarder.loadbalancer.server.port: "3000"
+      traefik.http.routers.hoarder.rule: "Host(`hoarder.${ROOT_FQDN}`)"
+      traefik.http.routers.hoarder.entrypoints: "websecure"
+      traefik.http.routers.hoarder.tls: "true"
       glance.name: Hoarder
       glance.icon: /assets/hoarder.png
       glance.url: https://hoarder.${ROOT_FQDN}
       glance.description: Bookmarks
       glance.id: hoarder
 
-
   hoarder_chrome:
     image: gcr.io/zenika-hub/alpine-chrome:124
-    container_name: 'hoarder_chrome'
+    container_name: "hoarder_chrome"
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     environment:
       TZ: ${TZ}
     command:
@@ -66,7 +63,7 @@ services:
       - --remote-debugging-port=9222
       - --hide-scrollbars
     labels:
-      meta.name: 'hoarder_chrome'
+      meta.name: "hoarder_chrome"
       meta.stack: ${STACK}
       glance.name: Hoarder Chrome
       glance.icon: /assets/googlechrome.svg
@@ -75,10 +72,10 @@ services:
 
   hoarder_meilisearch:
     image: getmeili/meilisearch:v1.33.1
-    container_name: 'hoarder_meilisearch'
+    container_name: "hoarder_meilisearch"
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     environment:
       MEILI_NO_ANALYTICS: "true"
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
@@ -86,7 +83,7 @@ services:
     volumes:
       - hoarder_meilisearch:/meili_data
     labels:
-      meta.name: 'hoarder_meilisearch'
+      meta.name: "hoarder_meilisearch"
       meta.stack: ${STACK}
       glance.name: Hoarder Meilisearch
       glance.icon: /assets/meilisearch.svg

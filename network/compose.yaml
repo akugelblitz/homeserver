@@ -3,17 +3,21 @@ networks:
     name: backbone-network
     attachable: true
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 volumes:
   tailscale_data:
   traefik_certs:
+  traefik_logs:
   adguard_data:
 
 services:
   tailscale:
     image: tailscale/tailscale:${TS_VERSION:-latest}
     container_name: tailscale
-    hostname: traefik
+    hostname: ${HOSTNAME}
     restart: unless-stopped
     networks:
       - backbone-network
@@ -32,39 +36,62 @@ services:
     cap_add:
       - net_admin
       - sys_module
+    healthcheck:
+      test: ["CMD", "tailscale", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     labels:
-      meta.name: 'tailscale'
+      meta.name: "tailscale"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`)'
-      traefik.http.routers.traefik.entrypoints: 'websecure'
-      traefik.http.routers.traefik.service: 'api@internal'
-      traefik.http.services.traefik.loadbalancer.server.port: '8080'
-      traefik.http.routers.traefik.tls: 'true'
-      traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
-      traefik.http.routers.traefik.tls.domains[0].main: '${ROOT_FQDN}'
-      traefik.http.routers.traefik.tls.domains[0].sans: '*.${ROOT_FQDN}'
+      traefik.enable: "true"
+      # Traefik Dashboard
+      traefik.http.routers.traefik-dashboard.rule: "Host(`traefik.${ROOT_FQDN}`)"
+      traefik.http.routers.traefik-dashboard.entrypoints: "websecure"
+      traefik.http.routers.traefik-dashboard.service: "api@internal"
+      traefik.http.routers.traefik-dashboard.middlewares: "secure-chain@file"
+      traefik.http.routers.traefik-dashboard.tls: "true"
+      traefik.http.routers.traefik-dashboard.tls.certresolver: "letsencrypt"
+      # Metrics endpoint
+      traefik.http.routers.traefik-metrics.rule: "Host(`traefik.${ROOT_FQDN}`) && PathPrefix(`/metrics`)"
+      traefik.http.routers.traefik-metrics.entrypoints: "websecure"
+      traefik.http.routers.traefik-metrics.service: "prometheus@internal"
+      traefik.http.routers.traefik-metrics.middlewares: "admin-whitelist@file"
       glance.name: Tailscale
       glance.icon: /assets/tailscale.svg
       glance.description: VPN
 
   traefik:
     image: traefik:${TRAEFIK_VERSION:-latest}
-    container_name: 'traefik'
+    container_name: "traefik"
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik.yaml:/etc/traefik/traefik.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./dynamic:/etc/traefik/dynamic:ro
       - traefik_certs:/certs
+      - traefik_logs:/var/log/traefik
     environment:
       CF_API_EMAIL: ${CF_API_EMAIL}
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+      ROOT_FQDN: ${ROOT_FQDN}
+      LE_EMAIL: ${LE_EMAIL}
       TZ: ${TZ}
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     labels:
-      meta.name: 'traefik'
+      meta.name: "traefik"
       meta.stack: ${STACK}
       glance.name: Traefik
       glance.icon: /assets/traefikproxy.svg
@@ -72,19 +99,21 @@ services:
       glance.description: Reverse Proxy
 
   whoami:
-    image: 'traefik/whoami:${WHOAMI_VERSION:-latest}'
-    container_name: 'whoami'
-    restart: 'unless-stopped'
+    image: "traefik/whoami:${WHOAMI_VERSION:-latest}"
+    container_name: "whoami"
+    restart: "unless-stopped"
     networks:
       - backbone-network
     labels:
-      meta.name: 'whoami'
+      meta.name: "whoami"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.whoami.loadbalancer.server.port: '80'
-      traefik.http.routers.whoami.rule: 'Host(`whoami.${ROOT_FQDN}`)'
-      traefik.http.routers.whoami.entrypoints: 'websecure'
-      traefik.http.routers.whoami.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.whoami.loadbalancer.server.port: "80"
+      traefik.http.routers.whoami.rule: "Host(`whoami.${ROOT_FQDN}`)"
+      traefik.http.routers.whoami.entrypoints: "websecure"
+      traefik.http.routers.whoami.middlewares: "secure-chain@file"
+      traefik.http.routers.whoami.tls: "true"
+      traefik.http.routers.whoami.tls.certresolver: "letsencrypt"
       glance.name: Whoami
       glance.hide: true
 
@@ -99,15 +128,48 @@ services:
       - backbone-network
     volumes:
       - adguard_data:/opt/adguardhome
+    environment:
+      TZ: ${TZ}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     labels:
-      meta.name: 'adguard'
+      meta.name: "adguard"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.adguard.loadbalancer.server.port: '3000'
-      traefik.http.routers.adguard.rule: 'Host(`dns.${ROOT_FQDN}`)'
-      traefik.http.routers.adguard.entrypoints: 'websecure'
-      traefik.http.routers.adguard.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.adguard.loadbalancer.server.port: "3000"
+      traefik.http.routers.adguard.rule: "Host(`dns.${ROOT_FQDN}`)"
+      traefik.http.routers.adguard.entrypoints: "websecure"
+      traefik.http.routers.adguard.middlewares: "secure-chain@file"
+      traefik.http.routers.adguard.tls: "true"
+      traefik.http.routers.adguard.tls.certresolver: "letsencrypt"
       glance.name: AdGuard
       glance.icon: /assets/adguard.svg
       glance.url: https://dns.${ROOT_FQDN}
       glance.description: DNS
+
+  logrotate:
+    image: blacklabelops/logrotate:latest
+    container_name: logrotate
+    restart: unless-stopped
+    environment:
+      - LOGROTATE_INTERVAL=daily
+      - LOGROTATE_RETENTION=7
+      - LOGROTATE_COMMAND=killall -HUP traefik
+    volumes:
+      - traefik_logs:/var/log/traefik
+    labels:
+      meta.name: "logrotate"
+      meta.stack: ${STACK}
+      glance.hide: true

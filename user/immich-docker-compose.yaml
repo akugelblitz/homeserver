@@ -2,20 +2,18 @@ networks:
   backbone-network:
     name: ${BACKBONE_STACK}
     external: true
-          
 
 volumes:
   immich_model_cache:
   immich_db_data:
 
-
-services:    
+services:
   immich-server:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
@@ -30,13 +28,13 @@ services:
     healthcheck:
       disable: false
     labels:
-      meta.name: 'immich'
+      meta.name: "immich"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.immich.loadbalancer.server.port: '2283'
-      traefik.http.routers.immich.rule: 'Host(`immich.${ROOT_FQDN}`)'
-      traefik.http.routers.immich.entrypoints: 'websecure'
-      traefik.http.routers.immich.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.immich.loadbalancer.server.port: "2283"
+      traefik.http.routers.immich.rule: "Host(`immich.${ROOT_FQDN}`)"
+      traefik.http.routers.immich.entrypoints: "websecure"
+      traefik.http.routers.immich.tls: "true"
       glance.name: Immich
       glance.icon: /assets/immich.svg
       glance.url: https://immich.${ROOT_FQDN}
@@ -53,7 +51,7 @@ services:
     #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     volumes:
       - immich_model_cache:/cache
     env_file:
@@ -61,7 +59,7 @@ services:
     healthcheck:
       disable: false
     labels:
-      meta.name: 'immich_ml'
+      meta.name: "immich_ml"
       meta.stack: ${STACK}
       glance.name: Immich Machine Learning
       glance.icon: /assets/tensorflow.svg
@@ -73,12 +71,12 @@ services:
     image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     environment:
       POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
       POSTGRES_USER: ${IMMICH_DB_USERNAME}
       POSTGRES_DB: ${IMMICH_DB_DATABASE_NAME}
-      POSTGRES_INITDB_ARGS: '--data-checksums'
+      POSTGRES_INITDB_ARGS: "--data-checksums"
     volumes:
       # Do not edit the next line. If you want to change the database storage location on your system, edit the value of IMMICH_DB_DATA_LOCATION in the immich.env file
       - immich_db_data:/var/lib/postgresql/data
@@ -101,7 +99,7 @@ services:
       -c shared_buffers=512MB
       -c wal_compression=on
     labels:
-      meta.name: 'immich_db'
+      meta.name: "immich_db"
       meta.stack: ${STACK}
       glance.name: Immich Postgres
       glance.icon: /assets/postgresql.svg

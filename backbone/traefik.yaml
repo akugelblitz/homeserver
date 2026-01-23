@@ -21,19 +21,18 @@ entryPoints:
     address: :80
     forwardedHeaders:
       trustedIPs:
-          - "127.0.0.1/32"
-          - "192.168.1.0/16"
-
+        - "127.0.0.1/32"
+        - "192.168.1.0/16"
 
   websecure:
     address: ":443"
     forwardedHeaders:
       trustedIPs:
-          - "127.0.0.1/32"  #localhost
-          - "10.0.0.0/8"    #home network   
-          - "100.0.0.0/8"   #tailnet
-          - "172.69.0.0/16" #admin-network
-          - "192.168.1.0/16"
+        - "127.0.0.1/32" #localhost
+        - "10.0.0.0/8" #home network
+        - "100.0.0.0/8" #tailnet
+        - "172.69.0.0/16" #admin-network
+        - "192.168.1.0/16"
 
   db:
     address: ":5432"
@@ -60,4 +59,3 @@ certificatesResolvers:
       dnsChallenge:
         provider: cloudflare
         delayBeforeCheck: 10 #Optional to wait x second before checking with the DNS Server
-

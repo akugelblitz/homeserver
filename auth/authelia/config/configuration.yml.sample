@@ -16,7 +16,7 @@ log:
   # file_path: '/config/authelia.%d.log'
 
 theme: light
-      
+
 totp:
   issuer: authelia.com
 
@@ -44,17 +44,17 @@ access_control:
       subject: 'oauth2:client:uptime-kuma'
       policy: 'one_factor'
 
-    - domain: 
+    - domain:
       - 'homepage.<your_domain>'
       policy: bypass
 
-    - domain: 
+    - domain:
       - '*.<your_domain>'
       policy: one_factor
       subject:
       - 'group:admin'
 
-    - domain: 
+    - domain:
       - 'hoarder.<your_domain>'
       policy: one_factor
       subject:
@@ -88,8 +88,8 @@ identity_validation:
 session:
   name: authelia_session
   secret: ...
-  expiration: 36000  
-  inactivity: 3600 
+  expiration: 36000
+  inactivity: 3600
   cookies:
     - domain: '<your_domain>'
       authelia_url: 'https://auth.<your_domain>'
@@ -123,16 +123,16 @@ identity_providers:
     ## See: https://www.authelia.com/c/oidc
     jwks:
     - algorithm: 'RS256'
-      
+
       key: |
         -----BEGIN PRIVATE KEY-----
 
-        -----END PRIVATE KEY-----         
+        -----END PRIVATE KEY-----
 
     clients:
       - client_id: 'beszel'
         client_name: 'Beszel'
-        client_secret: ''  
+        client_secret: ''
         public: false
         authorization_policy: 'one_factor'
         redirect_uris:

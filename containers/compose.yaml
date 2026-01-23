@@ -9,7 +9,7 @@ volumes:
 services:
   portainer:
     image: portainer/portainer-ce:${PORTAINER_VERSION:-latest}
-    container_name: 'portainer'
+    container_name: "portainer"
     restart: unless-stopped
     networks:
       - backbone-network
@@ -19,13 +19,13 @@ services:
     environment:
       TZ: ${TZ}
     labels:
-      meta.name: 'portainer'
+      meta.name: "portainer"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.portainer.loadbalancer.server.port: '9000'
-      traefik.http.routers.portainer.rule: 'Host(`portainer.${ROOT_FQDN}`)'
-      traefik.http.routers.portainer.entrypoints: 'websecure'
-      traefik.http.routers.portainer.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.portainer.loadbalancer.server.port: "9000"
+      traefik.http.routers.portainer.rule: "Host(`portainer.${ROOT_FQDN}`)"
+      traefik.http.routers.portainer.entrypoints: "websecure"
+      traefik.http.routers.portainer.tls: "true"
       glance.name: Portainer
       glance.icon: /assets/portainer.svg
       glance.url: https://portainer.${ROOT_FQDN}

@@ -5,28 +5,28 @@ networks:
 
 services:
   authelia:
-    image: 'authelia/authelia:${AUTHELIA_VERSION:-latest}'
-    container_name: 'authelia'
+    image: "authelia/authelia:${AUTHELIA_VERSION:-latest}"
+    container_name: "authelia"
     restart: unless-stopped
     user: "${UID}:${GID}"
     networks:
       - backbone-network
     volumes:
-      - './authelia/config:/config'
+      - "./authelia/config:/config"
     environment:
       TZ: ${TZ}
-      X_AUTHELIA_CONFIG_FILTERS: 'template'
+      X_AUTHELIA_CONFIG_FILTERS: "template"
     labels:
-      meta.name: 'authelia'
+      meta.name: "authelia"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.auth.loadbalancer.server.port: '9091'
-      traefik.http.routers.auth.rule: 'Host(`auth.${ROOT_FQDN}`)'
-      traefik.http.routers.auth.entrypoints: 'websecure'
-      traefik.http.routers.auth.tls: 'true'
-      traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
-      traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
-      traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
+      traefik.enable: "true"
+      traefik.http.services.auth.loadbalancer.server.port: "9091"
+      traefik.http.routers.auth.rule: "Host(`auth.${ROOT_FQDN}`)"
+      traefik.http.routers.auth.entrypoints: "websecure"
+      traefik.http.routers.auth.tls: "true"
+      traefik.http.middlewares.authelia.forwardAuth.address: "http://authelia:9091/api/authz/forward-auth"
+      traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: "true"
+      traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: "Remote-User,Remote-Groups,Remote-Email,Remote-Name"
       glance.name: Authelia
       glance.icon: /assets/authelia.svg
       glance.url: https://auth.${ROOT_FQDN}

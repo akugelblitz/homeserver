@@ -20,13 +20,13 @@ services:
       - ./glance/assets:/app/assets
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
-      meta.name: 'glance'
+      meta.name: "glance"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.glance.loadbalancer.server.port: '8080'
-      traefik.http.routers.glance.rule: 'Host(`glance.${ROOT_FQDN}`)'
-      traefik.http.routers.glance.entrypoints: 'websecure'
-      traefik.http.routers.glance.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.glance.loadbalancer.server.port: "8080"
+      traefik.http.routers.glance.rule: "Host(`glance.${ROOT_FQDN}`)"
+      traefik.http.routers.glance.entrypoints: "websecure"
+      traefik.http.routers.glance.tls: "true"
       glance.name: Glance
       glance.icon: /assets/glance.png
       glance.url: https://glance.${ROOT_FQDN}

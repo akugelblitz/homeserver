@@ -9,8 +9,8 @@ volumes:
 
 services:
   beszel:
-    image: 'henrygd/beszel:${BESZEL_VERSION:-latest}'
-    container_name: 'beszel'
+    image: "henrygd/beszel:${BESZEL_VERSION:-latest}"
+    container_name: "beszel"
     restart: unless-stopped
     networks:
       - backbone-network
@@ -21,14 +21,14 @@ services:
       LOG_LEVEL: debug
       USER_CREATION: true
     labels:
-      meta.name: 'beszel'
+      meta.name: "beszel"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.beszel.loadbalancer.server.port: '8090'
-      traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
-      traefik.http.routers.beszel.entrypoints: 'websecure'
-      traefik.http.routers.beszel.tls: 'true'
-      traefik.http.routers.beszel.service: 'beszel'
+      traefik.enable: "true"
+      traefik.http.services.beszel.loadbalancer.server.port: "8090"
+      traefik.http.routers.beszel.rule: "Host(`beszel.${ROOT_FQDN}`)"
+      traefik.http.routers.beszel.entrypoints: "websecure"
+      traefik.http.routers.beszel.tls: "true"
+      traefik.http.routers.beszel.service: "beszel"
       glance.name: Beszel
       glance.icon: /assets/beszel.svg
       glance.url: https://beszel.${ROOT_FQDN}
@@ -36,8 +36,8 @@ services:
       glance.id: beszel
 
   beszel-agent:
-    image: 'henrygd/beszel-agent:${BESZEL_VERSION:-latest}'
-    container_name: 'beszel-agent'
+    image: "henrygd/beszel-agent:${BESZEL_VERSION:-latest}"
+    container_name: "beszel-agent"
     hostname: ${HOSTNAME}
     restart: unless-stopped
     networks:
@@ -50,14 +50,14 @@ services:
       LOG_LEVEL: debug
       TZ: ${TZ}
     labels:
-      meta.name: 'beszel-agent'
+      meta.name: "beszel-agent"
       meta.stack: ${STACK}
       glance.name: Beszel Agent
       glance.parent: beszel
 
   uptime-kuma:
     image: louislam/uptime-kuma:${UPTIME_KUMA_VERSION:-latest}
-    container_name: 'kuma'
+    container_name: "kuma"
     restart: unless-stopped
     volumes:
       - uptime_kuma_data:/app/data
@@ -67,14 +67,14 @@ services:
     environment:
       TZ: ${TZ}
     labels:
-      meta.name: 'uptime-kuma'
+      meta.name: "uptime-kuma"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.kuma.loadbalancer.server.port: '3001'
-      traefik.http.routers.kuma.rule: 'Host(`kuma.${ROOT_FQDN}`)'
-      traefik.http.routers.kuma.entrypoints: 'websecure'
-      traefik.http.routers.kuma.tls: 'true'
-      traefik.http.routers.kuma.middlewares: 'authelia@docker'
+      traefik.enable: "true"
+      traefik.http.services.kuma.loadbalancer.server.port: "3001"
+      traefik.http.routers.kuma.rule: "Host(`kuma.${ROOT_FQDN}`)"
+      traefik.http.routers.kuma.entrypoints: "websecure"
+      traefik.http.routers.kuma.tls: "true"
+      traefik.http.routers.kuma.middlewares: "authelia@docker"
       glance.name: Uptime Kuma
       glance.icon: /assets/uptimekuma.svg
       glance.url: https://kuma.${ROOT_FQDN}

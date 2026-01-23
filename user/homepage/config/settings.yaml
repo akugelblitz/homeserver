@@ -13,105 +13,105 @@ disableCollapse: true
 base: https://home.example.com
 favicon: /icons/favicon-small.png
 background:
-    image: /images/background.png
+  image: /images/background.png
 
 # Layout Configuration
 layout:
   # HOME Tab Items
   Files Management:
-      style: column
-      tab: HOME
-      icon: mdi-file-multiple
+    style: column
+    tab: HOME
+    icon: mdi-file-multiple
   Media Processing:
-      style: column
-      tab: HOME
-      icon: mdi-multimedia
+    style: column
+    tab: HOME
+    icon: mdi-multimedia
   Media Management:
-      style: column
-      tab: HOME
-      icon: mdi-expansion-card
+    style: column
+    tab: HOME
+    icon: mdi-expansion-card
   System Monitoring:
-      style: column
-      tab: HOME
-      icon: mdi-server
+    style: column
+    tab: HOME
+    icon: mdi-server
   Cloud Services:
-      style: column
-      tab: HOME
-      icon: mdi-google-cloud
+    style: column
+    tab: HOME
+    icon: mdi-google-cloud
   Sharing Platforms:
-      style: column
-      tab: HOME
-      icon: mdi-share-all
+    style: column
+    tab: HOME
+    icon: mdi-share-all
   Tools Collection:
-      style: column
-      tab: HOME
-      icon: mdi-tools
+    style: column
+    tab: HOME
+    icon: mdi-tools
   Discord Bots:
-      style: column
-      tab: HOME
-      icon: mdi-robot
+    style: column
+    tab: HOME
+    icon: mdi-robot
   Game Servers:
-      style: column
-      tab: HOME
-      icon: mdi-gamepad-variant
+    style: column
+    tab: HOME
+    icon: mdi-gamepad-variant
   _hidden0:
-      style: column
-      tab: HOME
+    style: column
+    tab: HOME
   _hidden1:
-      style: column
-      tab: HOME
+    style: column
+    tab: HOME
   # STAT Tab Items
   Document Directories:
-      style: column
-      tab: STAT
-      icon: mdi-file-document-outline
+    style: column
+    tab: STAT
+    icon: mdi-file-document-outline
   Camera Galleries:
-      style: column
-      tab: STAT
-      icon: mdi-camera-outline
+    style: column
+    tab: STAT
+    icon: mdi-camera-outline
   Music Libraries:
-      style: column
-      tab: STAT
-      icon: mdi-music-box-outline
+    style: column
+    tab: STAT
+    icon: mdi-music-box-outline
   Movies Library:
-      style: column
-      tab: STAT
-      icon: mdi-movie-roll
+    style: column
+    tab: STAT
+    icon: mdi-movie-roll
   Series Library:
-      style: column
-      tab: STAT
-      icon: mdi-television-classic
+    style: column
+    tab: STAT
+    icon: mdi-television-classic
   Clips Library:
-      style: column
-      tab: STAT
-      icon: mdi-movie-outline
+    style: column
+    tab: STAT
+    icon: mdi-movie-outline
   Watch Time:
-      style: column
-      tab: STAT
-      icon: mdi-account-group-outline
+    style: column
+    tab: STAT
+    icon: mdi-account-group-outline
   Popular Clients:
-      style: column
-      tab: STAT
-      icon: mdi-cellphone-link
+    style: column
+    tab: STAT
+    icon: mdi-cellphone-link
   Release Calendar:
-      style: column
-      tab: STAT
-      icon: mdi-calendar
+    style: column
+    tab: STAT
+    icon: mdi-calendar
   # DEPS Tab Items
   Databases:
-      style: column
-      tab: DEPS
-      icon: mdi-database
+    style: column
+    tab: DEPS
+    icon: mdi-database
   Postgres:
-      style: column
-      tab: DEPS
-  Tensorchord: 
-      style: column
-      tab: DEPS
+    style: column
+    tab: DEPS
+  Tensorchord:
+    style: column
+    tab: DEPS
   Redis:
-      style: column
-      tab: DEPS
+    style: column
+    tab: DEPS
   Homepage Configuration:
-      style: column
-      tab: DEPS
-      icon: mdi-home
+    style: column
+    tab: DEPS
+    icon: mdi-home

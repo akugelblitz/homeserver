@@ -40,19 +40,20 @@ services:
       PAPERLESS_HTTP_REMOTE_USER_HEADER_NAME: HTTP_REMOTE_USER
       PAPERLESS_LOGOUT_REDIRECT_URL: https://auth.${ROOT_FQDN}/logout
     healthcheck:
-      test: ["CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000"]
+      test:
+        ["CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000"]
       interval: 30s
       timeout: 10s
       retries: 5
     labels:
-      meta.name: 'paperless'
+      meta.name: "paperless"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.paperless.loadbalancer.server.port: '8000'
-      traefik.http.routers.paperless.rule: 'Host(`paperless.${ROOT_FQDN}`)'
-      traefik.http.routers.paperless.entrypoints: 'websecure'
-      traefik.http.routers.paperless.tls: 'true'
-      traefik.http.routers.paperless.middlewares: 'authelia@docker'
+      traefik.enable: "true"
+      traefik.http.services.paperless.loadbalancer.server.port: "8000"
+      traefik.http.routers.paperless.rule: "Host(`paperless.${ROOT_FQDN}`)"
+      traefik.http.routers.paperless.entrypoints: "websecure"
+      traefik.http.routers.paperless.tls: "true"
+      traefik.http.routers.paperless.middlewares: "authelia@docker"
       glance.name: Paperless
       glance.icon: /assets/paperlessngx.svg
       glance.url: https://paperless.${ROOT_FQDN}

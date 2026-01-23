@@ -29,13 +29,13 @@ services:
     healthcheck:
       disable: false
     labels:
-      meta.name: 'immich'
+      meta.name: "immich"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.immich.loadbalancer.server.port: '2283'
-      traefik.http.routers.immich.rule: 'Host(`immich.${ROOT_FQDN}`)'
-      traefik.http.routers.immich.entrypoints: 'websecure'
-      traefik.http.routers.immich.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.immich.loadbalancer.server.port: "2283"
+      traefik.http.routers.immich.rule: "Host(`immich.${ROOT_FQDN}`)"
+      traefik.http.routers.immich.entrypoints: "websecure"
+      traefik.http.routers.immich.tls: "true"
       glance.name: Immich
       glance.icon: /assets/immich.svg
       glance.url: https://immich.${ROOT_FQDN}
@@ -55,7 +55,7 @@ services:
     healthcheck:
       disable: false
     labels:
-      meta.name: 'immich_ml'
+      meta.name: "immich_ml"
       meta.stack: ${STACK}
       glance.name: Immich Machine Learning
       glance.icon: /assets/tensorflow.svg
@@ -72,7 +72,7 @@ services:
       POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
       POSTGRES_USER: ${IMMICH_DB_USERNAME}
       POSTGRES_DB: ${IMMICH_DB_DATABASE_NAME}
-      POSTGRES_INITDB_ARGS: '--data-checksums'
+      POSTGRES_INITDB_ARGS: "--data-checksums"
       TZ: ${TZ}
     volumes:
       - immich_db_data:/var/lib/postgresql/data
@@ -95,7 +95,7 @@ services:
       -c shared_buffers=512MB
       -c wal_compression=on
     labels:
-      meta.name: 'immich_db'
+      meta.name: "immich_db"
       meta.stack: ${STACK}
       glance.name: Immich Postgres
       glance.icon: /assets/postgresql.svg

@@ -4,15 +4,12 @@ networks:
     attachable: true
     driver: bridge
 
-          
-
 volumes:
   tailscale_data:
   traefik_certs:
   postgres_data:
   redis_data:
   adguard_data:
-
 
 services:
   tailscale:
@@ -21,7 +18,7 @@ services:
     hostname: traefik
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     ports:
       - "80:80"
       - "443:443"
@@ -38,17 +35,17 @@ services:
       - net_admin
       - sys_module
     labels:
-      meta.name: 'tailscale'
+      meta.name: "tailscale"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.routers.traefik.rule: 'Host(`traefik.${ROOT_FQDN}`) '
-      traefik.http.routers.traefik.entrypoints: 'websecure'
-      traefik.http.routers.traefik.service: 'api@internal'
-      traefik.http.services.traefik.loadbalancer.server.port: '8080'
-      traefik.http.routers.traefik.tls: 'true'
-      traefik.http.routers.traefik.tls.certresolver: 'letsencrypt'
-      traefik.http.routers.traefik.tls.domains[0].main: '$ROOT_FQDN'
-      traefik.http.routers.traefik.tls.domains[0].sans: '*.$ROOT_FQDN'
+      traefik.enable: "true"
+      traefik.http.routers.traefik.rule: "Host(`traefik.${ROOT_FQDN}`) "
+      traefik.http.routers.traefik.entrypoints: "websecure"
+      traefik.http.routers.traefik.service: "api@internal"
+      traefik.http.services.traefik.loadbalancer.server.port: "8080"
+      traefik.http.routers.traefik.tls: "true"
+      traefik.http.routers.traefik.tls.certresolver: "letsencrypt"
+      traefik.http.routers.traefik.tls.domains[0].main: "$ROOT_FQDN"
+      traefik.http.routers.traefik.tls.domains[0].sans: "*.$ROOT_FQDN"
       # traefik.http.routers.traefik.middlewares: 'authelia@docker'
       # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
       # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
@@ -56,13 +53,13 @@ services:
       glance.name: Tailscale
       glance.icon: /assets/tailscale.svg
       glance.description: VPN
-      
+
   traefik:
     image: traefik:v3.6.7
-    container_name: 'traefik'
+    container_name: "traefik"
     restart: unless-stopped
     security_opt:
-    - no-new-privileges:true
+      - no-new-privileges:true
     network_mode: "service:tailscale"
     # networks:
     # - backbone-network
@@ -70,15 +67,15 @@ services:
     # - "80:80"
     # - "443:443"
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    - ./traefik.yaml:/etc/traefik/traefik.yaml
-    - traefik_certs:/certs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.yaml:/etc/traefik/traefik.yaml
+      - traefik_certs:/certs
     environment:
       CF_API_EMAIL: ${CF_API_EMAIL}
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
       TZ: ${TZ}
     labels:
-      meta.name: 'traefik'
+      meta.name: "traefik"
       meta.stack: ${STACK}
       glance.name: Traefik
       glance.icon: /assets/traefikproxy.svg
@@ -97,17 +94,22 @@ services:
       # traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
       # traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
       # traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Email,Remote-Name'
-      
+
   postgres:
     image: postgres:16.3
-    command: ["bash", "-c", "docker-entrypoint.sh postgres & sleep 10 && sh /app/create-dbs.sh && tail -f /dev/null"]
-    container_name: 'postgres'
+    command:
+      [
+        "bash",
+        "-c",
+        "docker-entrypoint.sh postgres & sleep 10 && sh /app/create-dbs.sh && tail -f /dev/null",
+      ]
+    container_name: "postgres"
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     volumes:
-    - ./postgres/scripts/:/app/
-    - postgres_data:/var/lib/postgresql/data
+      - ./postgres/scripts/:/app/
+      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${ADMIN_USER}
@@ -120,14 +122,14 @@ services:
       retries: 5
       start_period: 5s
     labels:
-      meta.name: 'postgres'
+      meta.name: "postgres"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.tcp.services.postgres.loadbalancer.server.port: '5432'
-      traefik.tcp.routers.postgres.rule: 'HostSNI(`postgres.${ROOT_FQDN}`)'
-      traefik.tcp.routers.postgres.entrypoints: 'db'
-      traefik.tcp.routers.postgres.tls: 'true'
-      traefik.tcp.routers.postgres.tls.certresolver: 'letsencrypt'
+      traefik.enable: "true"
+      traefik.tcp.services.postgres.loadbalancer.server.port: "5432"
+      traefik.tcp.routers.postgres.rule: "HostSNI(`postgres.${ROOT_FQDN}`)"
+      traefik.tcp.routers.postgres.entrypoints: "db"
+      traefik.tcp.routers.postgres.tls: "true"
+      traefik.tcp.routers.postgres.tls.certresolver: "letsencrypt"
       glance.name: Postgres
       glance.icon: /assets/postgresql.svg
       glance.url: https://postgres.${ROOT_FQDN}
@@ -138,28 +140,28 @@ services:
     container_name: redis
     restart: unless-stopped
     networks:
-    - backbone-network 
+      - backbone-network
     volumes:
-    - redis_data:/data
+      - redis_data:/data
     environment:
       TZ: ${TZ}
     labels:
-      meta.name: 'redis'
+      meta.name: "redis"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.tcp.services.redis.loadbalancer.server.port: '6379'
-      traefik.tcp.routers.redis.rule: 'HostSNI(`redis.${ROOT_FQDN}`)'
-      traefik.tcp.routers.redis.entrypoints: 'redis'
-      traefik.tcp.routers.redis.tls: 'true'
-      traefik.tcp.routers.redis.tls.certresolver: 'letsencrypt'
+      traefik.enable: "true"
+      traefik.tcp.services.redis.loadbalancer.server.port: "6379"
+      traefik.tcp.routers.redis.rule: "HostSNI(`redis.${ROOT_FQDN}`)"
+      traefik.tcp.routers.redis.entrypoints: "redis"
+      traefik.tcp.routers.redis.tls: "true"
+      traefik.tcp.routers.redis.tls.certresolver: "letsencrypt"
       glance.name: Redis
       glance.icon: /assets/redis.svg
       glance.url: https://redis.${ROOT_FQDN}
       glance.description: Cache
 
   authelia:
-    image: 'authelia/authelia:4.39'
-    container_name: 'authelia'
+    image: "authelia/authelia:4.39"
+    container_name: "authelia"
     restart: unless-stopped
     user: "${UID}:${GID}"
     depends_on:
@@ -167,46 +169,46 @@ services:
         condition: service_healthy
         restart: true
     networks:
-    - backbone-network 
+      - backbone-network
     volumes:
-    # - './authelia/secrets:/secrets:ro'
-    - './authelia/config:/config'
+      # - './authelia/secrets:/secrets:ro'
+      - "./authelia/config:/config"
     # - './authelia/logs:/var/log/authelia/'
     environment:
       TZ: ${TZ}
-      X_AUTHELIA_CONFIG_FILTERS: 'template' 
+      X_AUTHELIA_CONFIG_FILTERS: "template"
     labels:
-      meta.name: 'authelia'
+      meta.name: "authelia"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.auth.loadbalancer.server.port: '9091'
-      traefik.http.routers.auth.rule: 'Host(`auth.${ROOT_FQDN}`)'
-      traefik.http.routers.auth.entrypoints: 'websecure'
-      traefik.http.routers.auth.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.auth.loadbalancer.server.port: "9091"
+      traefik.http.routers.auth.rule: "Host(`auth.${ROOT_FQDN}`)"
+      traefik.http.routers.auth.entrypoints: "websecure"
+      traefik.http.routers.auth.tls: "true"
       glance.name: Authelia
       glance.icon: /assets/authelia.svg
       glance.url: https://auth.${ROOT_FQDN}
       glance.description: Authentication
-      
+
   adguard:
     image: adguard/adguardhome:v0.107.71
     container_name: adguard
     restart: unless-stopped
     ports:
-    - "53:53/tcp"
-    - "53:53/udp"
+      - "53:53/tcp"
+      - "53:53/udp"
     networks:
-    - backbone-network
+      - backbone-network
     volumes:
-    - adguard_data:/opt/adguardhome
+      - adguard_data:/opt/adguardhome
     labels:
-      meta.name: 'adguard'
+      meta.name: "adguard"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.adguard.loadbalancer.server.port: '3000'
-      traefik.http.routers.adguard.rule: 'Host(`dns.${ROOT_FQDN}`)'
-      traefik.http.routers.adguard.entrypoints: 'websecure'
-      traefik.http.routers.adguard.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.adguard.loadbalancer.server.port: "3000"
+      traefik.http.routers.adguard.rule: "Host(`dns.${ROOT_FQDN}`)"
+      traefik.http.routers.adguard.entrypoints: "websecure"
+      traefik.http.routers.adguard.tls: "true"
       glance.name: AdGuard
       glance.icon: /assets/adguard.svg
       glance.url: https://dns.${ROOT_FQDN}

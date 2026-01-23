@@ -10,7 +10,7 @@ volumes:
 services:
   hoarder:
     image: ghcr.io/karakeep-app/karakeep:${HOARDER_VERSION:-release}
-    container_name: 'hoarder'
+    container_name: "hoarder"
     restart: unless-stopped
     networks:
       - backbone-network
@@ -34,13 +34,13 @@ services:
       OAUTH_PROVIDER_NAME: authelia
       TZ: ${TZ}
     labels:
-      meta.name: 'hoarder'
+      meta.name: "hoarder"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.hoarder.loadbalancer.server.port: '3000'
-      traefik.http.routers.hoarder.rule: 'Host(`hoarder.${ROOT_FQDN}`)'
-      traefik.http.routers.hoarder.entrypoints: 'websecure'
-      traefik.http.routers.hoarder.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.hoarder.loadbalancer.server.port: "3000"
+      traefik.http.routers.hoarder.rule: "Host(`hoarder.${ROOT_FQDN}`)"
+      traefik.http.routers.hoarder.entrypoints: "websecure"
+      traefik.http.routers.hoarder.tls: "true"
       glance.name: Hoarder
       glance.icon: /assets/hoarder.png
       glance.url: https://hoarder.${ROOT_FQDN}
@@ -49,7 +49,7 @@ services:
 
   hoarder_chrome:
     image: gcr.io/zenika-hub/alpine-chrome:${CHROME_VERSION:-latest}
-    container_name: 'hoarder_chrome'
+    container_name: "hoarder_chrome"
     restart: unless-stopped
     networks:
       - backbone-network
@@ -63,7 +63,7 @@ services:
       - --remote-debugging-port=9222
       - --hide-scrollbars
     labels:
-      meta.name: 'hoarder_chrome'
+      meta.name: "hoarder_chrome"
       meta.stack: ${STACK}
       glance.name: Hoarder Chrome
       glance.icon: /assets/googlechrome.svg
@@ -72,7 +72,7 @@ services:
 
   hoarder_meilisearch:
     image: getmeili/meilisearch:${MEILISEARCH_VERSION:-latest}
-    container_name: 'hoarder_meilisearch'
+    container_name: "hoarder_meilisearch"
     restart: unless-stopped
     networks:
       - backbone-network
@@ -83,7 +83,7 @@ services:
     volumes:
       - hoarder_meilisearch:/meili_data
     labels:
-      meta.name: 'hoarder_meilisearch'
+      meta.name: "hoarder_meilisearch"
       meta.stack: ${STACK}
       glance.name: Hoarder Meilisearch
       glance.icon: /assets/meilisearch.svg

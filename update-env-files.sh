@@ -29,13 +29,13 @@ STACKS=(
 
 for stack in "${STACKS[@]}"; do
     ENV_FILE="$HOMESERVER_DIR/$stack/.env"
-    
+
     if [ -f "$ENV_FILE" ]; then
         echo "Processing $stack/.env..."
-        
+
         # Create backup
         cp "$ENV_FILE" "$ENV_FILE.backup"
-        
+
         # Add source directive at the top if not already present
         if ! grep -q "^# Source global configuration" "$ENV_FILE"; then
             {
@@ -47,7 +47,7 @@ for stack in "${STACKS[@]}"; do
             } > "$ENV_FILE.tmp"
             mv "$ENV_FILE.tmp" "$ENV_FILE"
         fi
-        
+
         echo "  ✓ Updated $stack/.env"
     fi
 done

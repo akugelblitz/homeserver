@@ -78,7 +78,7 @@ entryPoints:
         - "10.0.0.0/8"
         - "172.16.0.0/12"
         - "192.168.0.0/16"
-        - "100.64.0.0/10" # Tailscale
+        - "100.64.0.0/10"  # Tailscale
     http:
       redirections:
         entryPoint:
@@ -95,14 +95,14 @@ entryPoints:
         - "10.0.0.0/8"
         - "172.16.0.0/12"
         - "192.168.0.0/16"
-        - "100.64.0.0/10" # Tailscale
+        - "100.64.0.0/10"  # Tailscale
     http:
       tls:
         certResolver: letsencrypt
         domains:
-          - main: "kugelblitz.cc"
+          - main: "${ROOT_FQDN}"
             sans:
-              - "*.kugelblitz.cc"
+              - "*.${ROOT_FQDN}"
       middlewares:
         - security-headers@file
         - rate-limit@file
@@ -123,7 +123,7 @@ entryPoints:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: "a_kugelblitz1@protonmail.com"
+      email: "${LE_EMAIL}"
       storage: /certs/acme.json
       caServer: https://acme-v02.api.letsencrypt.org/directory
       keyType: EC384

@@ -2,7 +2,7 @@ users:
   admin:
     disabled: false
     displayname: "Admin"
-    password: "..."  
+    password: "..."
     email: homeserver@kugel.anonaddy.com
     groups:
       - admin
@@ -10,7 +10,7 @@ users:
   aditya:
     disabled: false
     displayname: "Aditya"
-    password: "..."  
+    password: "..."
     email: aditya@kugelblitz.cc
     groups:
       - admin

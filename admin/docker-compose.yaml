@@ -2,7 +2,6 @@ networks:
   backbone-network:
     name: ${BACKBONE_STACK}
     external: true
-          
 
 volumes:
   gotify_data:
@@ -69,7 +68,6 @@ services:
   #     glance.url: https://portainer.${ROOT_FQDN}
   #     glance.description: Docker Management
 
-
   # uptime-kuma:
   #   image: louislam/uptime-kuma:latest
   #   container_name: 'kuma'
@@ -78,10 +76,10 @@ services:
   #     - uptime_kuma_data:/app/data
   #     - /var/run/docker.sock:/var/run/docker.sock
   #   networks:
-  #   - backbone-network 
+  #   - backbone-network
   #   environment:
   #     TZ: ${TZ}
-  #     HOST: 
+  #     HOST:
   #   labels:
   #     meta.name: 'uptime-kuma'
   #     meta.stack: ${STACK}
@@ -95,59 +93,57 @@ services:
   #     glance.icon: /assets/uptimekuma.svg
   #     glance.url: https://kuma.${ROOT_FQDN}
   #     glance.description: Service Monitoring
-      
 
   beszel:
-    image: 'henrygd/beszel:latest' 
-    container_name: 'beszel'
+    image: "henrygd/beszel:latest"
+    container_name: "beszel"
 
     restart: unless-stopped
     # depends_on:
     #   - tailscale
     # network_mode: service:tailscale
     networks:
-    - backbone-network
+      - backbone-network
     volumes:
-    - beszel_data:/beszel_data
+      - beszel_data:/beszel_data
     # extra_hosts:
     #   - 'host.docker.internal:host-gateway'
-      # - 'gotify.${ROOT_FQDN}:${TRAEFIK_IP}'
+    # - 'gotify.${ROOT_FQDN}:${TRAEFIK_IP}'
     environment:
       TZ: ${TZ}
       LOG_LEVEL: debug
       USER_CREATION: true
     labels:
-      meta.name: 'beszel'
+      meta.name: "beszel"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.beszel.loadbalancer.server.port: '8090'
-      traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
-      traefik.http.routers.beszel.entrypoints: 'websecure'
-      traefik.http.routers.beszel.tls: 'true'
-      traefik.http.routers.beszel.service: 'beszel'
+      traefik.enable: "true"
+      traefik.http.services.beszel.loadbalancer.server.port: "8090"
+      traefik.http.routers.beszel.rule: "Host(`beszel.${ROOT_FQDN}`)"
+      traefik.http.routers.beszel.entrypoints: "websecure"
+      traefik.http.routers.beszel.tls: "true"
+      traefik.http.routers.beszel.service: "beszel"
       glance.name: Beszel
       glance.icon: /assets/beszel.svg
       glance.url: https://beszel.${ROOT_FQDN}
       glance.description: Infra Monitoring
       glance.id: beszel
 
-
   beszel-agent:
-    image: 'henrygd/beszel-agent:latest'
-    container_name: 'beszel-agent'
+    image: "henrygd/beszel-agent:latest"
+    container_name: "beszel-agent"
     hostname: ${HOSTNAME}
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      PORT: 45876 
+      PORT: 45876
       KEY: ${BESZEL_PUBLIC_KEY}
       LOG_LEVEL: debug
       TZ: ${TZ}
     labels:
-      meta.name: 'beszel-agent'
+      meta.name: "beszel-agent"
       meta.stack: ${STACK}
       glance.name: Beszel Agent
       glance.parent: beszel
@@ -179,16 +175,3 @@ services:
   #     glance.icon: /assets/obsidian.svg
   #     glance.url: https://quartz.${ROOT_FQDN}
   #     glance.description: Notes
-    
-  
-  
-
-
-    
-
-  
-
-
-  
-
-

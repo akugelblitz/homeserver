@@ -30,7 +30,7 @@ format_size() {
     local bytes=$1
     local gb=$(echo "scale=2; $bytes / 1024 / 1024 / 1024" | bc)
     local tb=$(echo "scale=2; $gb / 1024" | bc)
-    
+
     if (( $(echo "$tb >= 1" | bc -l) )); then
         printf "%.2f TB" $tb
     else
@@ -77,7 +77,7 @@ format_watch_time() {
         echo "0 h"
         return
     fi
-    
+
     local hours=$(( ($seconds + 1800) / 3600 ))
     printf "%'d h" $hours
 }
@@ -89,7 +89,7 @@ format_duration() {
         echo "0 h"
         return
     fi
-    
+
     local hours=$(( ($microseconds + 18000000000) / 36000000000 ))
     printf "%'d h" $hours
 }
@@ -126,11 +126,11 @@ get_clips_runtime() {
     local dir="$1"
     local cache_file="/tmp/homepage_exporter/video_runtime.cache"
     local total_seconds=0
-    
+
     # Cache setup
     mkdir -p "/tmp/homepage_exporter"
     local current_mtime=$(stat -c %Y "$dir" 2>/dev/null)
-    
+
     # Check cache validity
     if [ -f "$cache_file" ] && cached_line=$(grep "^$dir:" "$cache_file" 2>/dev/null); then
         cached_mtime=$(echo "$cached_line" | cut -d: -f2)
@@ -138,7 +138,7 @@ get_clips_runtime() {
             total_seconds=$(echo "$cached_line" | cut -d: -f3)
         fi
     fi
-    
+
     # Recalculate if cache invalid
     if [ -z "$total_seconds" ] || [ "$total_seconds" = "0" ]; then
         while IFS= read -r -d '' file; do
@@ -148,7 +148,7 @@ get_clips_runtime() {
                 total_seconds=$(echo "$total_seconds + $secs" | bc)
             fi
         done < <(find "$dir" -type f \( -name "*.mp4" -o -name "*.mkv" -o -name "*.mov" \) -print0)
-        
+
         # Update cache
         if [ "$total_seconds" != "0" ]; then
             echo "$dir:$current_mtime:$total_seconds" > "$cache_file.tmp"
@@ -168,7 +168,7 @@ get_clips_runtime() {
 get_jellystat_data() {
     local endpoint=$1
     local method=${2:-GET}  # Default to GET if no method specified
-    
+
     if [ "$method" = "POST" ]; then
         curl -s -X POST -H "x-api-token: $API_TOKEN" "$JELLYSTAT_API/$endpoint"
     else
@@ -308,7 +308,7 @@ for dir in "/path/to/documents/user" "/path/to/documents/user" "/path/to/documen
     name=$(basename "$dir" | tr '[:upper:]' '[:lower:]')
     current_mtime=$(stat -c %Y "$dir" 2>/dev/null)
     status="scanned"
-    
+
     # Check and validate cache
     if [ -f "$CACHE_FILE" ] && cached_line=$(grep "^$dir:" "$CACHE_FILE" 2>/dev/null); then
         cached_mtime=$(echo "$cached_line" | cut -d: -f2)
@@ -318,18 +318,18 @@ for dir in "/path/to/documents/user" "/path/to/documents/user" "/path/to/documen
             status="cached"
         fi
     fi
-    
+
     # Recalculate if cache invalid
     if [ "$status" = "scanned" ]; then
         dir_size=$(du -sb "$dir" 2>/dev/null | cut -f1)
         file_count=$(find "$dir" -type f 2>/dev/null | wc -l)
         echo "$dir:$current_mtime:$dir_size:$file_count" >> "$CACHE_FILE.tmp"
     fi
-    
+
     # Update totals
     total_size=$((total_size + dir_size))
     total_files=$((total_files + file_count))
-    
+
     # Write user statistics to JSON
     if [ "$first" = true ]; then
         echo "        \"$name\": {" >> "$OUTPUT_FILE"

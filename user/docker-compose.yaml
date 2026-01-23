@@ -6,7 +6,6 @@ networks:
   backbone-network:
     name: ${BACKBONE_STACK}
     external: true
-          
 
 volumes:
   jellyfin_config:
@@ -17,31 +16,30 @@ volumes:
   livesync_data:
   livesync_etc:
 
-
-services:      
+services:
   whoami:
-    image: 'traefik/whoami:v1.11'
-    container_name: 'whoami'
-    restart: 'unless-stopped'
+    image: "traefik/whoami:v1.11"
+    container_name: "whoami"
+    restart: "unless-stopped"
     networks:
-    - backbone-network    
+      - backbone-network
     labels:
-      meta.name: 'whoami'
+      meta.name: "whoami"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.whoami.loadbalancer.server.port: '80'
-      traefik.http.routers.whoami.rule: 'Host(`whoami.${ROOT_FQDN}`)'
-      traefik.http.routers.whoami.entrypoints: 'websecure'
-      traefik.http.routers.whoami.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.whoami.loadbalancer.server.port: "80"
+      traefik.http.routers.whoami.rule: "Host(`whoami.${ROOT_FQDN}`)"
+      traefik.http.routers.whoami.entrypoints: "websecure"
+      traefik.http.routers.whoami.tls: "true"
       glance.name: Whoami
       glance.hide: true
 
   jellyfin:
     image: jellyfin/jellyfin:10.11
-    container_name: 'jellyfin'
+    container_name: "jellyfin"
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     user: 1000:1000
     group_add:
       - "989"
@@ -57,11 +55,11 @@ services:
       # - JELLYFIN_PublishedServerUrl=${JELLYFIN_URL}  # Include protocol prefix (e.g. `https://)
       # - HEALTHCHECK_URL=http://localhost:80/health  # Change the server's jellyfleet port to 8096 here or to 80 in /config/config/network.xml
     labels:
-      traefik.enable: 'true'
-      traefik.http.services.jellyfin.loadbalancer.server.port: '8096'
-      traefik.http.routers.jellyfin.rule: 'Host(`jellyfin.${ROOT_FQDN}`)'
-      traefik.http.routers.jellyfin.entrypoints: 'websecure'
-      traefik.http.routers.jellyfin.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.jellyfin.loadbalancer.server.port: "8096"
+      traefik.http.routers.jellyfin.rule: "Host(`jellyfin.${ROOT_FQDN}`)"
+      traefik.http.routers.jellyfin.entrypoints: "websecure"
+      traefik.http.routers.jellyfin.tls: "true"
 
   # jellyseerr:
   #   image: fallenbagel/jellyseerr:latest
@@ -83,7 +81,7 @@ services:
   #     - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.${ROOT_FQDN}`)"
   #     - "traefik.http.routers.jellyseerr.entrypoints=websecure"
   #     - "traefik.http.routers.jellyseerr.tls=true"
-     
+
   # open_webui:
   #   image: ghcr.io/open-webui/open-webui:main
   #   container_name: 'open_webui'
@@ -122,30 +120,29 @@ services:
   #     glance.url: https://chat.${ROOT_FQDN}
   #     glance.description: LLM Chat
 
-  
   glance:
     image: glanceapp/glance:v0.8.4
     container_name: glance
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     environment:
       TZ: ${TZ}
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       ADGUARD_USER: ${ADMIN_USER}
       ADGUARD_PASS: ${ADMIN_PASS}
     volumes:
-    - ./glance/config:/app/config
-    - ./glance/assets:/app/assets
-    - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./glance/config:/app/config
+      - ./glance/assets:/app/assets
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
-      meta.name: 'glance'
+      meta.name: "glance"
       meta.stack: ${STACK}
-      traefik.enable: 'true'
-      traefik.http.services.glance.loadbalancer.server.port: '8080'
-      traefik.http.routers.glance.rule: 'Host(`glance.${ROOT_FQDN}`)'
-      traefik.http.routers.glance.entrypoints: 'websecure'
-      traefik.http.routers.glance.tls: 'true'
+      traefik.enable: "true"
+      traefik.http.services.glance.loadbalancer.server.port: "8080"
+      traefik.http.routers.glance.rule: "Host(`glance.${ROOT_FQDN}`)"
+      traefik.http.routers.glance.entrypoints: "websecure"
+      traefik.http.routers.glance.tls: "true"
       glance.name: Glance
       glance.icon: /assets/glance.png
       glance.url: https://glance.${ROOT_FQDN}
@@ -179,7 +176,7 @@ services:
   #     PAPERLESS_URL: https://paperless.${ROOT_FQDN} # adjust; also sets ALLOWED_HOSTS, CORS_ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS
   #     PAPERLESS_ALLOWED_HOSTS: localhost,paperless.${ROOT_FQDN},127.0.0.1:8000 # comma separated list; add your domain name
   #     PAPERLESS_TIME_ZONE: ${TZ}
-  #     PAPERLESS_OCR_LANGUAGE: eng 
+  #     PAPERLESS_OCR_LANGUAGE: eng
   #     PAPERLESS_ENABLE_HTTP_REMOTE_USER: true
   #     PAPERLESS_HTTP_REMOTE_USER_HEADER_NAME: HTTP_REMOTE_USER
   #     PAPERLESS_LOGOUT_REDIRECT_URL: https://auth.kugelblitz.cc/logout
@@ -201,7 +198,7 @@ services:
   #     glance.icon: /assets/paperlessngx.svg
   #     glance.url: https://paperless.${ROOT_FQDN}
   #     glance.description: Document Management
-    
+
   # homepage:
   #   image: ghcr.io/gethomepage/homepage:latest
   #   container_name: homepage
@@ -214,8 +211,8 @@ services:
   #     PGID: 1000
   #     HOMEPAGE_ALLOWED_HOSTS: homepage.${ROOT_FQDN}
   #   volumes:
-  #   - /var/run/docker.sock:/var/run/docker.sock:ro    
-  #   - ./homepage/config:/app/config 
+  #   - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   - ./homepage/config:/app/config
   #   - ./homepage/icons:/app/public/icons
   #   labels:
   #     meta.name: 'homepage'
@@ -236,34 +233,42 @@ services:
     # user: 1000:1000
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     environment:
-    - COUCHDB_USER=${ADMIN_USER}
-    - COUCHDB_PASSWORD=${ADMIN_PASS}
+      - COUCHDB_USER=${ADMIN_USER}
+      - COUCHDB_PASSWORD=${ADMIN_PASS}
     volumes:
-    - livesync_data:/opt/couchdb/data
+      - livesync_data:/opt/couchdb/data
     # - livesync_etc:/opt/couchdb/etc/local.d
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5984/_up", "--user", "${ADMIN_USER}:${ADMIN_PASS}"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:5984/_up",
+          "--user",
+          "${ADMIN_USER}:${ADMIN_PASS}",
+        ]
       interval: 10s
       retries: 5
       start_period: 5s
     labels:
-      traefik.enable: 'true'
-      traefik.http.routers.livesync.rule: 'Host(`livesync.${ROOT_FQDN}`)'
-      traefik.http.routers.livesync.entrypoints: 'websecure'
-      traefik.http.routers.livesync.service: 'livesync'
-      traefik.http.services.livesync.loadbalancer.server.port: '5984'
-      traefik.http.routers.livesync.tls: 'true'
-      traefik.http.routers.livesync.middlewares: 'obsidiancors'
+      traefik.enable: "true"
+      traefik.http.routers.livesync.rule: "Host(`livesync.${ROOT_FQDN}`)"
+      traefik.http.routers.livesync.entrypoints: "websecure"
+      traefik.http.routers.livesync.service: "livesync"
+      traefik.http.services.livesync.loadbalancer.server.port: "5984"
+      traefik.http.routers.livesync.tls: "true"
+      traefik.http.routers.livesync.middlewares: "obsidiancors"
       # The part needed for CORS to work on Traefik 2.x starts here
-      traefik.http.middlewares.obsidiancors.headers.accesscontrolallowmethods: 'GET,PUT,POST,HEAD,DELETE'
-      traefik.http.middlewares.obsidiancors.headers.accesscontrolallowheaders: 'accept,authorization,content-type,origin,referer'
-      traefik.http.middlewares.obsidiancors.headers.accesscontrolalloworiginlist: 'app://obsidian.md,capacitor://localhost,http://localhost'
-      traefik.http.middlewares.obsidiancors.headers.accesscontrolmaxage: '3600'
-      traefik.http.middlewares.obsidiancors.headers.addvaryheader: 'true'
-      traefik.http.middlewares.obsidiancors.headers.accessControlAllowCredentials: 'true'
-  
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolallowmethods: "GET,PUT,POST,HEAD,DELETE"
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolallowheaders: "accept,authorization,content-type,origin,referer"
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolalloworiginlist: "app://obsidian.md,capacitor://localhost,http://localhost"
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolmaxage: "3600"
+      traefik.http.middlewares.obsidiancors.headers.addvaryheader: "true"
+      traefik.http.middlewares.obsidiancors.headers.accessControlAllowCredentials: "true"
+
   livesync-init:
     image: alpine/curl:latest
     # entrypoint: ["sleep"]
@@ -273,35 +278,32 @@ services:
     container_name: livesync-init
     # restart: unless-stopped
     depends_on:
-    - livesync
+      - livesync
         # condition: service_healthy
     networks:
-    - backbone-network
+      - backbone-network
     environment:
-    - hostname=http://livesync:5984
-    - username=${ADMIN_USER}
-    - password=${ADMIN_PASS}
-    - database=${COUCHDB_DB_NAME}
+      - hostname=http://livesync:5984
+      - username=${ADMIN_USER}
+      - password=${ADMIN_PASS}
+      - database=${COUCHDB_DB_NAME}
     volumes:
-    - ./livesync:/app
+      - ./livesync:/app
 
   livesync-helper:
     image: denoland/deno:latest
-    command: ["deno", "run", "-A", "/app/generate_setpuri.ts", ">", "/app/setpuri.txt"]
+    command:
+      ["deno", "run", "-A", "/app/generate_setpuri.ts", ">", "/app/setpuri.txt"]
     container_name: livesync-helper
     # restart: unless-stopped
     depends_on:
-    -  livesync-init
+      - livesync-init
     networks:
-    - backbone-network
+      - backbone-network
     environment:
-    - hostname=https://livesync.${ROOT_FQDN}
-    - username=${ADMIN_USER}
-    - password=${ADMIN_PASS}
-    - database=${COUCHDB_DB_NAME}
+      - hostname=https://livesync.${ROOT_FQDN}
+      - username=${ADMIN_USER}
+      - password=${ADMIN_PASS}
+      - database=${COUCHDB_DB_NAME}
     volumes:
-    - ./livesync:/app
-
-
-
-    
+      - ./livesync:/app
