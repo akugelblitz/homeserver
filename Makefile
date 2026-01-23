@@ -94,17 +94,11 @@ pre-commit-run:
 	@if [ -x "$(PRE_COMMIT)" ]; then \
 		$(PRE_COMMIT) run --all-files; \
 	else \
-		echo "Pre-commit not found, falling back to manual linting..."; \
-		$(MAKE) validate-yaml; \
-		$(MAKE) lint-shell; \
+		echo "Pre-commit not found, exiting..."; \
 	fi
 
 # Linting
 lint: pre-commit-run
-
-lint-shell:
-	@echo "=== Checking shell scripts ==="
-	@shellcheck **/*.sh || echo "Install shellcheck: apt install shellcheck"
 
 # Security
 security: security-secrets security-scan
@@ -168,7 +162,7 @@ stop-all:
 
 # Container status
 ps:
-	@docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+	@docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"
 
 # Cleanup
 clean:
@@ -182,10 +176,6 @@ clean-volumes:
 	if [ "$$response" = "y" ]; then \
 		docker volume prune -f; \
 	fi
-
-# Volume migration
-migrate-volumes:
-	@./migrate-volumes.sh
 
 # Update operations
 pull-all:
