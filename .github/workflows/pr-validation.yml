@@ -1,0 +1,224 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      compose: ${{ steps.filter.outputs.compose }}
+      shell: ${{ steps.filter.outputs.shell }}
+      yaml: ${{ steps.filter.outputs.yaml }}
+      env: ${{ steps.filter.outputs.env }}
+      docs: ${{ steps.filter.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            compose:
+              - '**/compose.yaml'
+              - '**/docker-compose.yaml'
+            shell:
+              - '**/*.sh'
+            yaml:
+              - '**/*.yaml'
+              - '**/*.yml'
+            env:
+              - '**/.env*'
+            docs:
+              - '**/*.md'
+
+  compose-validation:
+    name: Validate Docker Compose Files
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.compose == 'true'
+    strategy:
+      matrix:
+        stack:
+          - network
+          - dbs
+          - auth
+          - monitoring
+          - photos
+          - media
+          - bookmarks
+          - dashboard
+          - notes
+          - documents
+          - chat
+          - finance
+          - notifications
+          - containers
+          - wiki
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate ${{ matrix.stack }} compose file
+        run: |
+          cd ${{ matrix.stack }}
+          if [ -f compose.yaml ]; then
+            echo "Validating ${{ matrix.stack }}/compose.yaml..."
+            docker compose config > /dev/null
+            echo "✓ ${{ matrix.stack }} compose file is valid"
+          else
+            echo "⚠ No compose.yaml found in ${{ matrix.stack }}"
+          fi
+
+  yaml-lint:
+    name: YAML Linting
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.yaml == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install yamllint
+        run: pip install yamllint
+      
+      - name: Run yamllint
+        run: yamllint -c .yamllint.yml .
+
+  shellcheck:
+    name: Shell Script Validation
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.shell == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          severity: warning
+          ignore_paths: |
+            .git
+            node_modules
+
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  env-validation:
+    name: Environment File Validation
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.env == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate environment files
+        run: |
+          chmod +x .github/scripts/validate-env.sh
+          .github/scripts/validate-env.sh
+
+  markdown-lint:
+    name: Markdown Linting
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Lint Markdown files
+        uses: DavidAnson/markdownlint-cli2-action@v18
+        with:
+          globs: '**/*.md'
+
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs:
+      - compose-validation
+      - yaml-lint
+      - shellcheck
+      - secret-scan
+      - security-scan
+      - env-validation
+      - markdown-lint
+    if: always()
+    steps:
+      - name: Generate PR Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const results = {
+              'Compose Validation': '${{ needs.compose-validation.result }}',
+              'YAML Linting': '${{ needs.yaml-lint.result }}',
+              'Shell Script Check': '${{ needs.shellcheck.result }}',
+              'Secret Scanning': '${{ needs.secret-scan.result }}',
+              'Security Scanning': '${{ needs.security-scan.result }}',
+              'Environment Validation': '${{ needs.env-validation.result }}',
+              'Markdown Linting': '${{ needs.markdown-lint.result }}'
+            };
+            
+            let summary = '## 🔍 PR Validation Results\n\n';
+            let allPassed = true;
+            
+            for (const [check, result] of Object.entries(results)) {
+              const icon = result === 'success' ? '✅' : 
+                          result === 'skipped' ? '⏭️' : '❌';
+              summary += `${icon} **${check}**: ${result}\n`;
+              if (result === 'failure') allPassed = false;
+            }
+            
+            summary += '\n---\n';
+            summary += allPassed ? 
+              '✨ All checks passed! This PR is ready for review.' :
+              '⚠️ Some checks failed. Please review and fix the issues above.';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

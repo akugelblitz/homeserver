@@ -1,0 +1,68 @@
+networks:
+  backbone-network:
+    name: backbone-network
+    external: true
+
+volumes:
+  postgres_data:
+  redis_data:
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-16}
+    command: ["bash", "-c", "docker-entrypoint.sh postgres & sleep 10 && sh /app/create-dbs.sh && tail -f /dev/null"]
+    container_name: 'postgres'
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - ./postgres/scripts/:/app/
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${ADMIN_USER}
+      POSTGRES_PASSWORD: ${ADMIN_PASS}
+      PGPASSWORD: ${ADMIN_PASS}
+      TZ: ${TZ}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB}", "-U", "${ADMIN_USER}"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    labels:
+      meta.name: 'postgres'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.tcp.services.postgres.loadbalancer.server.port: '5432'
+      traefik.tcp.routers.postgres.rule: 'HostSNI(`postgres.${ROOT_FQDN}`)'
+      traefik.tcp.routers.postgres.entrypoints: 'db'
+      traefik.tcp.routers.postgres.tls: 'true'
+      traefik.tcp.routers.postgres.tls.certresolver: 'letsencrypt'
+      glance.name: Postgres
+      glance.icon: /assets/postgresql.svg
+      glance.url: https://postgres.${ROOT_FQDN}
+      glance.description: Database
+
+  redis:
+    image: docker.io/library/redis:${REDIS_VERSION:-alpine}
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - redis_data:/data
+    environment:
+      TZ: ${TZ}
+    labels:
+      meta.name: 'redis'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.tcp.services.redis.loadbalancer.server.port: '6379'
+      traefik.tcp.routers.redis.rule: 'HostSNI(`redis.${ROOT_FQDN}`)'
+      traefik.tcp.routers.redis.entrypoints: 'redis'
+      traefik.tcp.routers.redis.tls: 'true'
+      traefik.tcp.routers.redis.tls.certresolver: 'letsencrypt'
+      glance.name: Redis
+      glance.icon: /assets/redis.svg
+      glance.url: https://redis.${ROOT_FQDN}
+      glance.description: Cache

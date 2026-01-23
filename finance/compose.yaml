@@ -1,0 +1,34 @@
+networks:
+  backbone-network:
+    name: backbone-network
+    external: true
+
+volumes:
+  maybe_data:
+
+services:
+  maybe:
+    image: ghcr.io/maybe-finance/maybe:${MAYBE_VERSION:-latest}
+    container_name: 'maybe'
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - maybe_data:/app/data
+    environment:
+      TZ: ${TZ}
+      SECRET_KEY_BASE: ${MAYBE_SECRET_KEY_BASE}
+      DATABASE_URL: postgres://postgres:${ADMIN_PASS}@postgres:5432/maybe
+    labels:
+      meta.name: 'maybe'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.maybe.loadbalancer.server.port: '3000'
+      traefik.http.routers.maybe.rule: 'Host(`maybe.${ROOT_FQDN}`)'
+      traefik.http.routers.maybe.entrypoints: 'websecure'
+      traefik.http.routers.maybe.tls: 'true'
+      traefik.http.routers.maybe.middlewares: 'authelia@docker'
+      glance.name: Maybe
+      glance.icon: /assets/maybe.svg
+      glance.url: https://maybe.${ROOT_FQDN}
+      glance.description: Finance Management

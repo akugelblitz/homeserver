@@ -1,0 +1,81 @@
+networks:
+  backbone-network:
+    name: backbone-network
+    external: true
+
+volumes:
+  beszel_data:
+  uptime_kuma_data:
+
+services:
+  beszel:
+    image: 'henrygd/beszel:${BESZEL_VERSION:-latest}'
+    container_name: 'beszel'
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - beszel_data:/beszel_data
+    environment:
+      TZ: ${TZ}
+      LOG_LEVEL: debug
+      USER_CREATION: true
+    labels:
+      meta.name: 'beszel'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.beszel.loadbalancer.server.port: '8090'
+      traefik.http.routers.beszel.rule: 'Host(`beszel.${ROOT_FQDN}`)'
+      traefik.http.routers.beszel.entrypoints: 'websecure'
+      traefik.http.routers.beszel.tls: 'true'
+      traefik.http.routers.beszel.service: 'beszel'
+      glance.name: Beszel
+      glance.icon: /assets/beszel.svg
+      glance.url: https://beszel.${ROOT_FQDN}
+      glance.description: Infra Monitoring
+      glance.id: beszel
+
+  beszel-agent:
+    image: 'henrygd/beszel-agent:${BESZEL_VERSION:-latest}'
+    container_name: 'beszel-agent'
+    hostname: ${HOSTNAME}
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      PORT: 45876
+      KEY: ${BESZEL_PUBLIC_KEY}
+      LOG_LEVEL: debug
+      TZ: ${TZ}
+    labels:
+      meta.name: 'beszel-agent'
+      meta.stack: ${STACK}
+      glance.name: Beszel Agent
+      glance.parent: beszel
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:${UPTIME_KUMA_VERSION:-latest}
+    container_name: 'kuma'
+    restart: unless-stopped
+    volumes:
+      - uptime_kuma_data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - backbone-network
+    environment:
+      TZ: ${TZ}
+    labels:
+      meta.name: 'uptime-kuma'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.kuma.loadbalancer.server.port: '3001'
+      traefik.http.routers.kuma.rule: 'Host(`kuma.${ROOT_FQDN}`)'
+      traefik.http.routers.kuma.entrypoints: 'websecure'
+      traefik.http.routers.kuma.tls: 'true'
+      traefik.http.routers.kuma.middlewares: 'authelia@docker'
+      glance.name: Uptime Kuma
+      glance.icon: /assets/uptimekuma.svg
+      glance.url: https://kuma.${ROOT_FQDN}
+      glance.description: Service Monitoring

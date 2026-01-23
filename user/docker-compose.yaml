@@ -19,49 +19,49 @@ volumes:
 
 
 services:      
-  # whoami:
-  #   image: 'traefik/whoami'
-  #   container_name: 'whoami'
-  #   restart: 'unless-stopped'
-  #   networks:
-  #   - backbone-network    
-  #   labels:
-  #     meta.name: 'whoami'
-  #     meta.stack: ${STACK}
-  #     traefik.enable: 'true'
-  #     traefik.http.services.whoami.loadbalancer.server.port: '80'
-  #     traefik.http.routers.whoami.rule: 'Host(`whoami.${ROOT_FQDN}`)'
-  #     traefik.http.routers.whoami.entrypoints: 'websecure'
-  #     traefik.http.routers.whoami.tls: 'true'
-  #     glance.name: Whoami
-  #     glance.hide: true
+  whoami:
+    image: 'traefik/whoami:v1.11'
+    container_name: 'whoami'
+    restart: 'unless-stopped'
+    networks:
+    - backbone-network    
+    labels:
+      meta.name: 'whoami'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.whoami.loadbalancer.server.port: '80'
+      traefik.http.routers.whoami.rule: 'Host(`whoami.${ROOT_FQDN}`)'
+      traefik.http.routers.whoami.entrypoints: 'websecure'
+      traefik.http.routers.whoami.tls: 'true'
+      glance.name: Whoami
+      glance.hide: true
 
-  # jellyfin:
-  #   image: jellyfin/jellyfin:10.10.3
-  #   container_name: 'jellyfin'
-  #   restart: unless-stopped
-  #   networks:
-  #   - backbone-network
-  #   user: 1000:1000
-  #   group_add:
-  #     - "989"
-  #   volumes:
-  #     - "jellyfin_config:/config"
-  #     - "jellyfin_cache:/cache"
-  #     - "${MEDIA_DIRECTORY}:/media"
-  #   devices:
-  #     - /dev/dri/renderD128:/dev/dri/renderD128
-  #     - /dev/dri/card1:/dev/dri/card0
-  #   environment:
-  #     - TZ=${TZ}
-  #     # - JELLYFIN_PublishedServerUrl=${JELLYFIN_URL}  # Include protocol prefix (e.g. `https://)
-  #     # - HEALTHCHECK_URL=http://localhost:80/health  # Change the server's jellyfleet port to 8096 here or to 80 in /config/config/network.xml
-  #   labels:
-  #     traefik.enable: 'true'
-  #     traefik.http.services.jellyfin.loadbalancer.server.port: '8096'
-  #     traefik.http.routers.jellyfin.rule: 'Host(`jellyfin.${ROOT_FQDN}`)'
-  #     traefik.http.routers.jellyfin.entrypoints: 'websecure'
-  #     traefik.http.routers.jellyfin.tls: 'true'
+  jellyfin:
+    image: jellyfin/jellyfin:10.11
+    container_name: 'jellyfin'
+    restart: unless-stopped
+    networks:
+    - backbone-network
+    user: 1000:1000
+    group_add:
+      - "989"
+    volumes:
+      - "jellyfin_config:/config"
+      - "jellyfin_cache:/cache"
+      - "${MEDIA_DIRECTORY}:/media"
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card1:/dev/dri/card0
+    environment:
+      - TZ=${TZ}
+      # - JELLYFIN_PublishedServerUrl=${JELLYFIN_URL}  # Include protocol prefix (e.g. `https://)
+      # - HEALTHCHECK_URL=http://localhost:80/health  # Change the server's jellyfleet port to 8096 here or to 80 in /config/config/network.xml
+    labels:
+      traefik.enable: 'true'
+      traefik.http.services.jellyfin.loadbalancer.server.port: '8096'
+      traefik.http.routers.jellyfin.rule: 'Host(`jellyfin.${ROOT_FQDN}`)'
+      traefik.http.routers.jellyfin.entrypoints: 'websecure'
+      traefik.http.routers.jellyfin.tls: 'true'
 
   # jellyseerr:
   #   image: fallenbagel/jellyseerr:latest
@@ -123,33 +123,33 @@ services:
   #     glance.description: LLM Chat
 
   
-  # glance:
-  #   image: glanceapp/glance
-  #   container_name: glance
-  #   restart: unless-stopped
-  #   networks:
-  #   - backbone-network
-  #   environment:
-  #     TZ: ${TZ}
-  #     GITHUB_TOKEN: ${GITHUB_TOKEN}
-  #     ADGUARD_USER: ${ADMIN_USER}
-  #     ADGUARD_PASS: ${ADMIN_PASS}
-  #   volumes:
-  #   - ./glance/config:/app/config
-  #   - ./glance/assets:/app/assets
-  #   - /var/run/docker.sock:/var/run/docker.sock:ro
-  #   labels:
-  #     meta.name: 'glance'
-  #     meta.stack: ${STACK}
-  #     traefik.enable: 'true'
-  #     traefik.http.services.glance.loadbalancer.server.port: '8080'
-  #     traefik.http.routers.glance.rule: 'Host(`glance.${ROOT_FQDN}`)'
-  #     traefik.http.routers.glance.entrypoints: 'websecure'
-  #     traefik.http.routers.glance.tls: 'true'
-  #     glance.name: Glance
-  #     glance.icon: /assets/glance.png
-  #     glance.url: https://glance.${ROOT_FQDN}
-  #     glance.description: Dashboard
+  glance:
+    image: glanceapp/glance:v0.8.4
+    container_name: glance
+    restart: unless-stopped
+    networks:
+    - backbone-network
+    environment:
+      TZ: ${TZ}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      ADGUARD_USER: ${ADMIN_USER}
+      ADGUARD_PASS: ${ADMIN_PASS}
+    volumes:
+    - ./glance/config:/app/config
+    - ./glance/assets:/app/assets
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      meta.name: 'glance'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.glance.loadbalancer.server.port: '8080'
+      traefik.http.routers.glance.rule: 'Host(`glance.${ROOT_FQDN}`)'
+      traefik.http.routers.glance.entrypoints: 'websecure'
+      traefik.http.routers.glance.tls: 'true'
+      glance.name: Glance
+      glance.icon: /assets/glance.png
+      glance.url: https://glance.${ROOT_FQDN}
+      glance.description: Dashboard
 
   # paperless-ngx:
   #   image: ghcr.io/paperless-ngx/paperless-ngx:latest

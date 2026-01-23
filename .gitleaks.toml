@@ -1,0 +1,36 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist for example files and documentation"
+paths = [
+  '''\.env\.example$''',
+  '''\.env\.global\.example$''',
+  '''README\.md$''',
+  '''ENV_CONFIGURATION\.md$''',
+]
+
+[[rules]]
+description = "Detect generic API keys"
+id = "generic-api-key"
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret)[\s]*[:=][\s]*['"]?[a-zA-Z0-9]{20,}['"]?'''
+tags = ["key", "API"]
+
+[[rules]]
+description = "Detect passwords in env files"
+id = "password-in-env"
+regex = '''(?i)(password|passwd|pwd)[\s]*=[\s]*[^\s]+'''
+path = '''\.env$'''
+tags = ["password"]
+
+[[rules]]
+description = "Detect private keys"
+id = "private-key"
+regex = '''-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----'''
+tags = ["key", "private"]
+
+[[rules]]
+description = "Detect tokens"
+id = "generic-token"
+regex = '''(?i)(token|auth[_-]?key)[\s]*[:=][\s]*['"]?[a-zA-Z0-9_\-]{20,}['"]?'''
+tags = ["token"]

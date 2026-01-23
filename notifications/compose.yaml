@@ -1,0 +1,40 @@
+networks:
+  backbone-network:
+    name: backbone-network
+    external: true
+
+volumes:
+  gotify_data:
+
+services:
+  gotify:
+    image: gotify/server:${GOTIFY_VERSION:-latest}
+    container_name: 'gotify'
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - gotify_data:/app/data
+    environment:
+      GOTIFY_DATABASE_DIALECT: postgres
+      GOTIFY_DATABASE_CONNECTION: '${GOTIFY_DATABASE_CONNECTION}'
+      GOTIFY_DEFAULTUSER_NAME: ${ADMIN_USER}
+      GOTIFY_DEFAULTUSER_PASS: ${ADMIN_PASS}
+      TZ: ${TZ}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    labels:
+      meta.name: 'gotify'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.gotify.loadbalancer.server.port: '80'
+      traefik.http.routers.gotify.rule: 'Host(`gotify.${ROOT_FQDN}`)'
+      traefik.http.routers.gotify.entrypoints: 'websecure'
+      traefik.http.routers.gotify.tls: 'true'
+      glance.name: Gotify
+      glance.icon: /assets/gotify.svg
+      glance.url: https://gotify.${ROOT_FQDN}
+      glance.description: Notifications

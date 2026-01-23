@@ -1,4 +1,5 @@
 *.env
+.env.global
 info.txt
 test/
 secrets

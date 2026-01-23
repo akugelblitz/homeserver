@@ -1,21 +1,19 @@
 networks:
   backbone-network:
-    name: ${BACKBONE_STACK}
+    name: backbone-network
     external: true
-          
 
 volumes:
   hoarder_data:
   hoarder_meilisearch:
 
-
-services:    
+services:
   hoarder:
     image: ghcr.io/karakeep-app/karakeep:${HOARDER_VERSION:-release}
     container_name: 'hoarder'
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     volumes:
       - hoarder_data:/data
     environment:
@@ -42,20 +40,19 @@ services:
       traefik.http.services.hoarder.loadbalancer.server.port: '3000'
       traefik.http.routers.hoarder.rule: 'Host(`hoarder.${ROOT_FQDN}`)'
       traefik.http.routers.hoarder.entrypoints: 'websecure'
-      traefik.http.routers.hoarder.tls: 'true'   
+      traefik.http.routers.hoarder.tls: 'true'
       glance.name: Hoarder
       glance.icon: /assets/hoarder.png
       glance.url: https://hoarder.${ROOT_FQDN}
       glance.description: Bookmarks
       glance.id: hoarder
 
-
   hoarder_chrome:
-    image: gcr.io/zenika-hub/alpine-chrome:124
+    image: gcr.io/zenika-hub/alpine-chrome:${CHROME_VERSION:-latest}
     container_name: 'hoarder_chrome'
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     environment:
       TZ: ${TZ}
     command:
@@ -74,11 +71,11 @@ services:
       glance.parent: hoarder
 
   hoarder_meilisearch:
-    image: getmeili/meilisearch:v1.33.1
+    image: getmeili/meilisearch:${MEILISEARCH_VERSION:-latest}
     container_name: 'hoarder_meilisearch'
     restart: unless-stopped
     networks:
-    - backbone-network
+      - backbone-network
     environment:
       MEILI_NO_ANALYTICS: "true"
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}

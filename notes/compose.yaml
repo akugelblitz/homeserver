@@ -1,0 +1,84 @@
+networks:
+  backbone-network:
+    name: backbone-network
+    external: true
+
+volumes:
+  livesync_data:
+
+services:
+  livesync:
+    image: couchdb:${COUCHDB_VERSION:-latest}
+    container_name: livesync
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    environment:
+      - COUCHDB_USER=${ADMIN_USER}
+      - COUCHDB_PASSWORD=${ADMIN_PASS}
+    volumes:
+      - livesync_data:/opt/couchdb/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up", "--user", "${ADMIN_USER}:${ADMIN_PASS}"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    labels:
+      meta.name: 'livesync'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.routers.livesync.rule: 'Host(`livesync.${ROOT_FQDN}`)'
+      traefik.http.routers.livesync.entrypoints: 'websecure'
+      traefik.http.routers.livesync.service: 'livesync'
+      traefik.http.services.livesync.loadbalancer.server.port: '5984'
+      traefik.http.routers.livesync.tls: 'true'
+      traefik.http.routers.livesync.middlewares: 'obsidiancors'
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolallowmethods: 'GET,PUT,POST,HEAD,DELETE'
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolallowheaders: 'accept,authorization,content-type,origin,referer'
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolalloworiginlist: 'app://obsidian.md,capacitor://localhost,http://localhost'
+      traefik.http.middlewares.obsidiancors.headers.accesscontrolmaxage: '3600'
+      traefik.http.middlewares.obsidiancors.headers.addvaryheader: 'true'
+      traefik.http.middlewares.obsidiancors.headers.accessControlAllowCredentials: 'true'
+      glance.name: Livesync
+      glance.icon: /assets/obsidian.svg
+      glance.url: https://livesync.${ROOT_FQDN}
+      glance.description: Obsidian Sync
+
+  livesync-init:
+    image: alpine/curl:latest
+    entrypoint: ["/bin/sh"]
+    command: ["/app/couchdb-init.sh"]
+    container_name: livesync-init
+    depends_on:
+      - livesync
+    networks:
+      - backbone-network
+    environment:
+      - hostname=http://livesync:5984
+      - username=${ADMIN_USER}
+      - password=${ADMIN_PASS}
+      - database=${COUCHDB_DB_NAME}
+    volumes:
+      - ./livesync:/app
+    labels:
+      meta.name: 'livesync-init'
+      meta.stack: ${STACK}
+
+  livesync-helper:
+    image: denoland/deno:latest
+    command: ["deno", "run", "-A", "/app/generate_setpuri.ts", ">", "/app/setpuri.txt"]
+    container_name: livesync-helper
+    depends_on:
+      - livesync-init
+    networks:
+      - backbone-network
+    environment:
+      - hostname=https://livesync.${ROOT_FQDN}
+      - username=${ADMIN_USER}
+      - password=${ADMIN_PASS}
+      - database=${COUCHDB_DB_NAME}
+    volumes:
+      - ./livesync:/app
+    labels:
+      meta.name: 'livesync-helper'
+      meta.stack: ${STACK}

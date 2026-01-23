@@ -1,0 +1,42 @@
+networks:
+  backbone-network:
+    name: backbone-network
+    external: true
+
+volumes:
+  open_webui_data:
+
+services:
+  open_webui:
+    image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_VERSION:-main}
+    container_name: 'open_webui'
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - "open_webui_data:/app/backend/data"
+    environment:
+      TZ: ${TZ}
+      WEBUI_URL: chat.${ROOT_FQDN}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      ENABLE_OAUTH_SIGNUP: 'true'
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: 'true'
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
+      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET}
+      OPENID_PROVIDER_URL: 'https://auth.${ROOT_FQDN}/.well-known/openid-configuration'
+      OAUTH_PROVIDER_NAME: 'Authelia'
+      OAUTH_SCOPES: 'openid email profile groups'
+      DEFAULT_USER_ROLE: user
+    labels:
+      meta.name: 'chat'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.chat.loadbalancer.server.port: '8080'
+      traefik.http.routers.chat.rule: 'Host(`chat.${ROOT_FQDN}`)'
+      traefik.http.routers.chat.entrypoints: 'websecure'
+      traefik.http.routers.chat.tls: 'true'
+      glance.name: Open Webui
+      glance.icon: /assets/openwebui.svg
+      glance.url: https://chat.${ROOT_FQDN}
+      glance.description: LLM Chat

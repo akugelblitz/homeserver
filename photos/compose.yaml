@@ -1,0 +1,103 @@
+networks:
+  backbone-network:
+    name: backbone-network
+    external: true
+
+volumes:
+  immich_model_cache:
+  immich_db_data:
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - ${IMMICH_UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      DB_HOSTNAME: postgres
+      DB_USERNAME: ${IMMICH_DB_USERNAME}
+      DB_PASSWORD: ${IMMICH_DB_PASSWORD}
+      DB_DATABASE_NAME: ${IMMICH_DB_DATABASE_NAME}
+      REDIS_HOSTNAME: redis
+      TZ: ${TZ}
+    depends_on:
+      - immich_postgres
+    healthcheck:
+      disable: false
+    labels:
+      meta.name: 'immich'
+      meta.stack: ${STACK}
+      traefik.enable: 'true'
+      traefik.http.services.immich.loadbalancer.server.port: '2283'
+      traefik.http.routers.immich.rule: 'Host(`immich.${ROOT_FQDN}`)'
+      traefik.http.routers.immich.entrypoints: 'websecure'
+      traefik.http.routers.immich.tls: 'true'
+      glance.name: Immich
+      glance.icon: /assets/immich.svg
+      glance.url: https://immich.${ROOT_FQDN}
+      glance.description: Photo Management
+      glance.id: immich
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    volumes:
+      - immich_model_cache:/cache
+    environment:
+      TZ: ${TZ}
+    healthcheck:
+      disable: false
+    labels:
+      meta.name: 'immich_ml'
+      meta.stack: ${STACK}
+      glance.name: Immich Machine Learning
+      glance.icon: /assets/tensorflow.svg
+      glance.description: AI-driven image recognition and tagging for Immich.
+      glance.parent: immich
+
+  immich_postgres:
+    container_name: immich_postgres
+    image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
+    restart: unless-stopped
+    networks:
+      - backbone-network
+    environment:
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
+      POSTGRES_USER: ${IMMICH_DB_USERNAME}
+      POSTGRES_DB: ${IMMICH_DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+      TZ: ${TZ}
+    volumes:
+      - immich_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: >-
+        pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1;
+        Chksum="$$(psql --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" --tuples-only --no-align
+        --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')";
+        echo "checksum failure count is $$Chksum";
+        [ "$$Chksum" = '0' ] || exit 1
+      interval: 5m
+      start_interval: 30s
+      start_period: 5m
+    command: >-
+      postgres
+      -c shared_preload_libraries=vectors.so
+      -c 'search_path="$$user", public, vectors'
+      -c logging_collector=on
+      -c max_wal_size=2GB
+      -c shared_buffers=512MB
+      -c wal_compression=on
+    labels:
+      meta.name: 'immich_db'
+      meta.stack: ${STACK}
+      glance.name: Immich Postgres
+      glance.icon: /assets/postgresql.svg
+      glance.description: Dedicated database backend for Immich.
+      glance.parent: immich
