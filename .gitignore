@@ -12,3 +12,7 @@ users_database.yml
 fetch/
 obsidian-notes
 traefik.yaml
+
+
+#beszel
+beszel_*/
