@@ -4,52 +4,60 @@ networks:
     external: true
 
 volumes:
-  hoarder_data:
-  hoarder_meilisearch:
+  karakeep_data:
+  karakeep_meilisearch:
 
 services:
-  hoarder:
-    image: ghcr.io/karakeep-app/karakeep:${HOARDER_VERSION:-release}
-    container_name: "hoarder"
+  karakeep:
+    image: ghcr.io/karakeep-app/karakeep:${KARAKEEP_VERSION:-release}
+    container_name: "karakeep"
     restart: unless-stopped
     networks:
       - backbone-network
     volumes:
-      - hoarder_data:/data
+      - karakeep_data:/data
     environment:
-      MEILI_ADDR: http://hoarder_meilisearch:7700
-      BROWSER_WEB_URL: http://hoarder_chrome:9222
+      MEILI_ADDR: http://karakeep_meilisearch:7700
+      BROWSER_WEB_URL: http://karakeep_chrome:9222
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       INFERENCE_IMAGE_MODEL: gpt-4o-mini
       INFERENCE_TEXT_MODEL: gpt-4o-mini
       DATA_DIR: /data
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
-      NEXTAUTH_URL: hoarder.${ROOT_FQDN}
+      NEXTAUTH_URL: "https://karakeep.kugelblitz.cc"
       NEXTAUTH_URL_INTERNAL: http://localhost:3000
       DISABLE_PASSWORD_AUTH: true
+      OAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING: true
       OAUTH_WELLKNOWN_URL: https://auth.${ROOT_FQDN}/.well-known/openid-configuration
       OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
       OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET}
       OAUTH_PROVIDER_NAME: authelia
+      OAUTH_SCOPE: "openid email profile"
       TZ: ${TZ}
+      ASSET_STORE_S3_ENDPOINT: ${ASSET_STORE_S3_ENDPOINT}
+      ASSET_STORE_S3_ACCESS_KEY_ID: ${ASSET_STORE_S3_ACCESS_KEY_ID}
+      ASSET_STORE_S3_SECRET_ACCESS_KEY: ${ASSET_STORE_S3_SECRET_ACCESS_KEY}
+      ASSET_STORE_S3_BUCKET: ${ASSET_STORE_S3_BUCKET}
+      ASSET_STORE_S3_FORCE_PATH_STYLE: "true"
+      ASSET_STORE_S3_REGION: "us-east-1"
     labels:
-      meta.name: "hoarder"
+      meta.name: "karakeep"
       meta.stack: ${STACK}
       traefik.enable: "true"
-      traefik.http.services.hoarder.loadbalancer.server.port: "3000"
-      traefik.http.routers.hoarder.rule: "Host(`hoarder.${ROOT_FQDN}`)"
-      traefik.http.routers.hoarder.entrypoints: "websecure"
-      traefik.http.routers.hoarder.tls: "true"
-      glance.name: Hoarder
-      glance.icon: /assets/hoarder.png
-      glance.url: https://hoarder.${ROOT_FQDN}
+      traefik.http.services.karakeep.loadbalancer.server.port: "3000"
+      traefik.http.routers.karakeep.rule: "Host(`karakeep.${ROOT_FQDN}`)"
+      traefik.http.routers.karakeep.entrypoints: "websecure"
+      traefik.http.routers.karakeep.tls: "true"
+      glance.name: Karakeep
+      glance.icon: /assets/karakeep.png
+      glance.url: https://karakeep.${ROOT_FQDN}
       glance.description: Bookmarks
-      glance.id: hoarder
+      glance.id: karakeep
 
-  hoarder_chrome:
+  karakeep_chrome:
     image: gcr.io/zenika-hub/alpine-chrome:${CHROME_VERSION:-latest}
-    container_name: "hoarder_chrome"
+    container_name: "karakeep_chrome"
     restart: unless-stopped
     networks:
       - backbone-network
@@ -63,16 +71,16 @@ services:
       - --remote-debugging-port=9222
       - --hide-scrollbars
     labels:
-      meta.name: "hoarder_chrome"
+      meta.name: "karakeep_chrome"
       meta.stack: ${STACK}
-      glance.name: Hoarder Chrome
+      glance.name: Karakeep Chrome
       glance.icon: /assets/googlechrome.svg
-      glance.description: Chrome for Hoarder
-      glance.parent: hoarder
+      glance.description: Chrome for Karakeep
+      glance.parent: karakeep
 
-  hoarder_meilisearch:
+  karakeep_meilisearch:
     image: getmeili/meilisearch:${MEILISEARCH_VERSION:-latest}
-    container_name: "hoarder_meilisearch"
+    container_name: "karakeep_meilisearch"
     restart: unless-stopped
     networks:
       - backbone-network
@@ -81,11 +89,11 @@ services:
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       TZ: ${TZ}
     volumes:
-      - hoarder_meilisearch:/meili_data
+      - karakeep_meilisearch:/meili_data
     labels:
-      meta.name: "hoarder_meilisearch"
+      meta.name: "karakeep_meilisearch"
       meta.stack: ${STACK}
-      glance.name: Hoarder Meilisearch
+      glance.name: Karakeep Meilisearch
       glance.icon: /assets/meilisearch.svg
-      glance.description: Meilisearch for Hoarder
-      glance.parent: hoarder
+      glance.description: Meilisearch for Karakeep
+      glance.parent: karakeep
