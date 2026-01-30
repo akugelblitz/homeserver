@@ -158,18 +158,3 @@ services:
       glance.icon: /assets/adguard.svg
       glance.url: https://dns.${ROOT_FQDN}
       glance.description: DNS
-
-  logrotate:
-    image: blacklabelops/logrotate:latest
-    container_name: logrotate
-    restart: unless-stopped
-    environment:
-      - LOGROTATE_INTERVAL=daily
-      - LOGROTATE_RETENTION=7
-      - LOGROTATE_COMMAND=killall -HUP traefik
-    volumes:
-      - traefik_logs:/var/log/traefik
-    labels:
-      meta.name: "logrotate"
-      meta.stack: ${STACK}
-      glance.hide: true
