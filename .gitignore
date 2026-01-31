@@ -16,3 +16,7 @@ traefik.yaml
 
 #beszel
 beszel_*/
+
+
+#papra
+documents/ingestion/
