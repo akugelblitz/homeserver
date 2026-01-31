@@ -42,7 +42,6 @@ services:
       traefik.http.routers.papra.rule: "Host(`papra.${ROOT_FQDN}`)"
       traefik.http.routers.papra.entrypoints: "websecure"
       traefik.http.routers.papra.tls: "true"
-      traefik.http.routers.papra.middlewares: "authelia@docker"
       glance.name: papra
       glance.icon: /assets/paprangx.svg
       glance.url: https://papra.${ROOT_FQDN}
